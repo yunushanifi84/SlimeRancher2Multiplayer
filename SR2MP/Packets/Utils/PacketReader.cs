@@ -154,6 +154,17 @@ public sealed class PacketReader : PacketBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T ReadEnumFromString<T>() where T : struct, Enum => Enum.Parse<T>(ReadString());
 
+    private TCollection ReadCollection<TCollection, T>(Func<int, TCollection> factory, Action<TCollection, T> add, Func<PacketReader, T> reader)
+    {
+        var count = ReadUShort();
+        var collection = factory(count);
+
+        for (var i = 0; i < count; i++)
+            add(collection, reader(this));
+
+        return collection;
+    }
+
     public T[] ReadArray<T>(Func<PacketReader, T> reader)
     {
         var array = new T[ReadUShort()];
@@ -165,48 +176,13 @@ public sealed class PacketReader : PacketBuffer
     }
 
     public List<T> ReadList<T>(Func<PacketReader, T> reader)
-    {
-        var count = ReadUShort();
-        var list = new List<T>(count);
-
-        for (var i = 0; i < count; i++)
-            list.Add(reader(this));
-
-        return list;
-    }
+        => ReadCollection(PacketReaderDels.ListFactory<T>.Func, PacketReaderDels.ListAdd<T>.Func, reader);
 
     public HashSet<T> ReadSet<T>(Func<PacketReader, T> reader)
-    {
-        var count = ReadUShort();
-        var list = new HashSet<T>(count);
-
-        for (var i = 0; i < count; i++)
-            list.Add(reader(this));
-
-        return list;
-    }
-
-    // public CppCollections.List<T> ReadCppList<T>(Func<PacketReader, T> reader)
-    // {
-    //     var count = ReadUShort();
-    //     var list = new CppCollections.List<T>(count);
-
-    //     for (var i = 0; i < count; i++)
-    //         list.Add(reader(this));
-
-    //     return list;
-    // }
+        => ReadCollection(PacketReaderDels.HashSetFactory<T>.Func, PacketReaderDels.HashSetAdd<T>.Func, reader);
 
     public CppCollections.HashSet<T> ReadCppSet<T>(Func<PacketReader, T> reader)
-    {
-        var count = ReadUShort();
-        var list = new CppCollections.HashSet<T>();
-
-        for (var i = 0; i < count; i++)
-            list.Add(reader(this));
-
-        return list;
-    }
+        => ReadCollection(PacketReaderDels.CppHashSetFactory<T>.Func, PacketReaderDels.CppHashSetAdd<T>.Func, reader);
 
     public Dictionary<TKey, TValue> ReadDictionary<TKey, TValue>(Func<PacketReader, TKey> keyReader, Func<PacketReader, TValue> valueReader) where TKey : notnull
     {
@@ -521,5 +497,35 @@ public static class PacketReaderDels
             var lambda = Expression.Lambda<Func<T>>(newExp);
             return lambda.Compile();
         }
+    }
+
+    public static class ListFactory<T>
+    {
+        public static readonly Func<int, List<T>> Func = count => new List<T>(count);
+    }
+
+    public static class ListAdd<T>
+    {
+        public static readonly Action<List<T>, T> Func = (list, item) => list.Add(item);
+    }
+
+    public static class HashSetFactory<T>
+    {
+        public static readonly Func<int, HashSet<T>> Func = count => new HashSet<T>(count);
+    }
+
+    public static class HashSetAdd<T>
+    {
+        public static readonly Action<HashSet<T>, T> Func = (set, item) => set.Add(item);
+    }
+
+    public static class CppHashSetFactory<T>
+    {
+        public static readonly Func<int, CppCollections.HashSet<T>> Func = _ => new CppCollections.HashSet<T>();
+    }
+
+    public static class CppHashSetAdd<T>
+    {
+        public static readonly Action<CppCollections.HashSet<T>, T> Func = (set, item) => set.Add(item);
     }
 }

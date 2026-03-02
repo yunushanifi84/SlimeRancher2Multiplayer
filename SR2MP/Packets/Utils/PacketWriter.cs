@@ -144,7 +144,7 @@ public sealed class PacketWriter : PacketBuffer
 
         Advance(actualCount);
     }
-    
+
     public void WriteStringWithoutSize(string? value)
     {
         if (string.IsNullOrEmpty(value))
@@ -178,7 +178,7 @@ public sealed class PacketWriter : PacketBuffer
 
         var enumerator = items.GetEnumerator();
         var casted = enumerator.Cast<Il2CppSystem.Collections.IEnumerator>();
-        
+
         while (casted.MoveNext())
             writer(this, enumerator.Current);
     }
@@ -193,13 +193,10 @@ public sealed class PacketWriter : PacketBuffer
 
     public void WriteDictionary<TKey, TValue>(Dictionary<TKey, TValue>? dict, Action<PacketWriter, TKey> keyWriter, Action<PacketWriter, TValue> valueWriter) where TKey : notnull
     {
-        if (dict == null)
-        {
-            WriteUShort(0);
-            return;
-        }
+        WriteUShort((ushort)(dict?.Count ?? 0));
 
-        WriteUShort((ushort)dict.Count);
+        if (dict == null)
+            return;
 
         foreach (var (key, value) in dict)
         {
@@ -341,7 +338,7 @@ public sealed class PacketWriter : PacketBuffer
         base.Clear();
         size = 0;
     }
-    
+
     public static PacketWriter Borrow(int initialCapacity = 256)
     {
         var writer = RecyclePool<PacketWriter>.Borrow();
