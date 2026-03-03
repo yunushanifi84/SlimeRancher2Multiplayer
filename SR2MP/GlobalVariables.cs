@@ -9,6 +9,7 @@ namespace SR2MP;
 
 public static class GlobalVariables
 {
+    internal static bool devMode = true;
     public static readonly string[] CheatCommands = {
         "actortype", "clearinv", "delwarp", "emotions", "fastforward", "flatlook", "fling", "floaty", "freeze",
         "fxplayer", "gadget", "give", "gordo", "gravity", "infenergy", "infhealth", "kill", "killall", "newbucks",

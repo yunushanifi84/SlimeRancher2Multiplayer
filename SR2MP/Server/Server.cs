@@ -57,7 +57,8 @@ public sealed class SR2MPServer
 
         try
         {
-            PlayerId = PlayerIdGenerator.GeneratePersistentPlayerId();
+            PlayerId = devMode ? "PLAYER_TEST_MODE" : PlayerIdGenerator.GeneratePersistentPlayerId();
+            
             packetManager.RegisterHandlers();
             Application.quitting += new Action(Close);
             networkManager.Start(port, enableIPv6);
