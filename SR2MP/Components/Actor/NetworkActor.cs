@@ -298,71 +298,56 @@ public sealed class NetworkActor : MonoBehaviour
 
             if (syncTimer >= 0) return;
 
-            if (LocallyOwned)
+            if (!LocallyOwned)
+                return;
+
+            syncTimer = Timers.ActorTimer;
+            previousPosition = transform.position;
+            previousRotation = transform.rotation;
+            nextPosition = transform.position;
+            nextRotation = transform.rotation;
+
+            var actorId = ActorId;
+            if (actorId.Value == 0) return;
+
+            ActorUpdateType updateType =
+                    isSlime ? ActorUpdateType.Slime
+                : isResource ? ActorUpdateType.Resource
+                : isPlort ? ActorUpdateType.Plort
+                : ActorUpdateType.Actor;
+
+            double resourceProgress = 0f;
+            ResourceCycle.State resourceState = ResourceCycle.State.UNRIPE;
+            if (isResource && cycle != null && cycle._model != null)
             {
-                syncTimer = Timers.ActorTimer;
-                previousPosition = transform.position;
-                previousRotation = transform.rotation;
-                nextPosition = transform.position;
-                nextRotation = transform.rotation;
-
-                var actorId = ActorId;
-                if (actorId.Value == 0) return;
-
-                ActorUpdateType updateType =
-                      isSlime ? ActorUpdateType.Slime
-                    : isResource ? ActorUpdateType.Resource
-                    : isPlort ? ActorUpdateType.Plort
-                    : ActorUpdateType.Actor;
-
-                double resourceProgress = 0f;
-                ResourceCycle.State resourceState = ResourceCycle.State.UNRIPE;
-                if (isResource && cycle != null && cycle._model != null)
-                {
-                    resourceProgress = cycle._model.progressTime;
-                    resourceState = cycle._model.state;
-                }
-
-                var packet = new ActorUpdatePacket();
-                packet.UpdateType = updateType;
-
-                if (updateType == ActorUpdateType.Slime)
-                {
-                    packet.ActorId = actorId;
-                    packet.Position = transform.position;
-                    packet.Rotation = transform.rotation;
-                    packet.Velocity = rigidbody ? rigidbody.velocity : Vector3.zero;
-                    packet.Emotions = EmotionsFloat;
-                }
-                else if (updateType == ActorUpdateType.Resource)
-                {
-                    packet.ActorId = actorId;
-                    packet.Position = transform.position;
-                    packet.Rotation = transform.rotation;
-                    packet.Velocity = rigidbody ? rigidbody.velocity : Vector3.zero;
-                    packet.ResourceProgress = resourceProgress;
-                    packet.ResourceState = resourceState;
-                }
-                else if (updateType == ActorUpdateType.Plort)
-                {
-                    var plortModel = GetComponent<PlortModel>();
-                    packet.ActorId = actorId;
-                    packet.Position = transform.position;
-                    packet.Rotation = transform.rotation;
-                    packet.Velocity = rigidbody ? rigidbody.velocity : Vector3.zero;
-                    packet.Invulnerable = plortModel?._invulnerability?.IsInvulnerable ?? false;
-                    packet.InvulnerablePeriod = plortModel?._invulnerability?.InvulnerabilityPeriod ?? 0f;
-                }
-                else
-                {
-                    packet.ActorId = actorId;
-                    packet.Position = transform.position;
-                    packet.Rotation = transform.rotation;
-                    packet.Velocity = rigidbody ? rigidbody.velocity : Vector3.zero;
-                }
-
-                Main.SendToAllOrServer(packet);
+                resourceProgress = cycle._model.progressTime;
+                resourceState = cycle._model.state;
             }
+
+            var packet = new ActorUpdatePacket();
+            packet.UpdateType = updateType;
+            packet.ActorId = actorId;
+            packet.Position = transform.position;
+            packet.Rotation = transform.rotation;
+            packet.Velocity = rigidbody ? rigidbody.velocity : Vector3.zero;
+
+            if (updateType == ActorUpdateType.Slime)
+            {
+                packet.Emotions = EmotionsFloat;
+            }
+            else if (updateType == ActorUpdateType.Resource)
+            {
+                packet.ResourceProgress = resourceProgress;
+                packet.ResourceState = resourceState;
+            }
+            else if (updateType == ActorUpdateType.Plort)
+            {
+                var plortModel = GetComponent<PlortModel>();
+                packet.Invulnerable = plortModel?._invulnerability?.IsInvulnerable ?? false;
+                packet.InvulnerablePeriod = plortModel?._invulnerability?.InvulnerabilityPeriod ?? 0f;
+            }
+
+            Main.SendToAllOrServer(packet);
         }
         catch (Exception ex)
         {
