@@ -9,6 +9,7 @@ public sealed partial class MultiplayerUI
     private bool viewingHelp = false;
 
     public MenuState state = MenuState.Hidden;
+    public ErrorType errorState = ErrorType.None;
     private bool chatShown = false;
     private MenuState previousState = MenuState.Hidden;
 
@@ -26,6 +27,14 @@ public sealed partial class MultiplayerUI
         var connected = Main.Client.IsConnected;
         var hosting = Main.Server.IsRunning();
 
+        if (!string.IsNullOrWhiteSpace(connectionFailedReason))
+        {
+            errorState = ErrorType.ConnectionDeny;
+            return MenuState.Error;
+        }
+        
+        errorState = ErrorType.None;
+        
         if (loading) return MenuState.Hidden;
         if (firstTime) return MenuState.SettingsInitial;
         if (viewingSettings) return MenuState.SettingsMain;

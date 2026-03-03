@@ -86,6 +86,9 @@ public sealed partial class MultiplayerUI : MonoBehaviour
             case MenuState.ConnectedHost:
                 HostingScreen();
                 break;
+            case MenuState.Error:
+                DrawError();
+                break;
             default:
                 UnimplementedScreen();
                 break;

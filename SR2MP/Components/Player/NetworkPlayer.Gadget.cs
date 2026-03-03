@@ -35,6 +35,7 @@ public partial class NetworkPlayer
     public Vector3 prevGadgetPosition;
     public Quaternion nextGadgetRotation;
     public Quaternion prevGadgetRotation;
+    public Quaternion onlineGadgetLocalRotation;
 
     public PlayerItemController playerItemController;
     public GameObject? footprintPrefabInstance;
@@ -53,25 +54,26 @@ public partial class NetworkPlayer
         onNetworkGadgetIDChanged += OnGadgetIDChanged;
     }
 
+    private void ApplyGadgetLocalRotation()
+    {
+        if (!placeholderGadgetPrefabInstance) return;
+        var gadgetObj = placeholderGadgetPrefabInstance!.GetComponentInChildren<Gadget>();
+        if (gadgetObj)
+            gadgetObj.transform.localRotation = onlineGadgetLocalRotation;
+    }
 
     private void UpdateGadgetInterpolation()
     {
         if (!footprintPrefabInstance)
             return;
-
-        //if (interpolationEnd <= interpolationStart)
-        //    return;
         
         var t = Mathf.InverseLerp(interpolationStartGadget, interpolationEndGadget, UnityEngine.Time.unscaledTime);
         t = Mathf.Clamp01(t);
 
         footprintPrefabInstance!.transform.position = Vector3.Lerp(prevGadgetPosition, nextGadgetPosition, t);
+        footprintPrefabInstance!.transform.rotation = Quaternion.Slerp(prevGadgetRotation, nextGadgetRotation, t);
         
-        if (!placeholderGadgetPrefabInstance)
-            return;
-        SrLogger.LogMessage($"{ID}: Using {t} as the Lerp slider, the new position position will be:\n{prevGadgetRotation} -> {Quaternion.Slerp(prevGadgetRotation, nextGadgetRotation, t)} -> {nextGadgetRotation}");
-        
-        placeholderGadgetPrefabInstance!.transform.rotation = Quaternion.Slerp(prevGadgetRotation, nextGadgetRotation, t);
+        ApplyGadgetLocalRotation();
     }
 
     private void UpdateGadgetMode()
@@ -82,7 +84,6 @@ public partial class NetworkPlayer
         transformTimerGadget -= UnityEngine.Time.unscaledDeltaTime;
         if (transformTimerGadget >= 0f)
             return;
-        
         
         if (IsLocal)
         {
@@ -117,10 +118,7 @@ public partial class NetworkPlayer
         }
 
         if (footprintPrefabInstance)
-        {
-            //UpdateInterpolation();
             footprintRendererInstance!.material = GetFootprintMaterial(onlinePlacementValid);
-        }
     }
 
     private void UpdateLocalGadgetMode()
@@ -134,7 +132,8 @@ public partial class NetworkPlayer
                 Enabled = false,
                 PlayerId = ID,
                 Position = Vector3.zero,
-                Rotation = Vector3.zero,
+                Rotation = Quaternion.identity,
+                GadgetLocalRotation = Quaternion.identity,
                 CurrentGadget = -1,
                 ValidPlacement = false,
             };
@@ -142,8 +141,6 @@ public partial class NetworkPlayer
             Main.SendToAllOrServer(packet2);
             return;
         }
-        //if (transformTimer >= 0f)
-        //    return;
         
         var gadget = playerItemController._gadgetItem._heldGadget;
         var gadgetID =
@@ -151,12 +148,18 @@ public partial class NetworkPlayer
             ? NetworkActorManager.GetPersistentID(gadget.Cast<IdentifiableType>())
             : -1;
         
+        var gadgetLocalRotation = Quaternion.identity;
+        var gadgetObj = footprintPrefabInstance.GetComponentInChildren<Gadget>();
+        if (gadgetObj)
+            gadgetLocalRotation = gadgetObj.transform.localRotation;
+        
         var packet = new PlayerGadgetUpdatePacket
         {
             Enabled = true,
             PlayerId = ID,
             Position = footprintPrefabInstance.transform.position,
-            Rotation = playerItemController._gadgetItem._gadgetPlaceholderInstance?.transform.eulerAngles ?? Vector3.zero,
+            Rotation = footprintPrefabInstance.transform.rotation,
+            GadgetLocalRotation = gadgetLocalRotation,
             CurrentGadget = gadgetID,
             ValidPlacement = (playerItemController._gadgetItem._isPlacementValid &&
                               !playerItemController._gadgetItem._isPlacementBlocked)
@@ -166,14 +169,16 @@ public partial class NetworkPlayer
         Main.SendToAllOrServer(packet);
     }
 
-    public void OnGadgetPositionReceived(Vector3 newPosition, Vector3 newRotation)
+    public void OnGadgetPositionReceived(Vector3 newPosition, Quaternion newRotation, Quaternion newLocalRotation)
     {
         prevGadgetPosition = footprintPrefabInstance?.transform.position ?? newPosition;
-
-        prevGadgetRotation =  footprintPrefabInstance?.transform.rotation ?? Quaternion.Euler(newRotation);
+        prevGadgetRotation = footprintPrefabInstance?.transform.rotation ?? newRotation;
 
         nextGadgetPosition = newPosition;
-        nextGadgetRotation = Quaternion.Euler(newRotation);
+        nextGadgetRotation = newRotation;
+        onlineGadgetLocalRotation = newLocalRotation;
+        
+        ApplyGadgetLocalRotation();
     }
 
     private void OnGadgetModeChanged(bool newMode)
@@ -187,7 +192,7 @@ public partial class NetworkPlayer
             DontDestroyOnLoad(footprintPrefabInstance);
 
             footprintPrefabInstance.transform.position = nextGadgetPosition;
-            //footprintPrefabInstance.transform.rotation = nextGadgetRotation;
+            footprintPrefabInstance.transform.rotation = nextGadgetRotation;
             prevGadgetPosition = nextGadgetPosition;
             prevGadgetRotation = nextGadgetRotation;
             var renderer = Instantiate(footprintRendererPrefab, footprintPrefabInstance.transform, false);
@@ -199,6 +204,7 @@ public partial class NetworkPlayer
             footprintPrefabInstance = null;
         }
     }
+
     private void OnGadgetIDChanged(int gadgetID)
     {
         if (gadgetID == -1)
@@ -206,14 +212,27 @@ public partial class NetworkPlayer
             SetHeldGadget(playerItemController._gadgetItem, null);
             return;
         }
-        
-        var definition = actorManager.ActorTypes[gadgetID].Cast<GadgetDefinition>();
+
+        if (!actorManager.ActorTypes.TryGetValue(gadgetID, out var type))
+        {
+            SrLogger.LogWarning($"OnGadgetIDChanged: no actor type found for id {gadgetID}");
+            return;
+        }
+
+        var definition = type.TryCast<GadgetDefinition>();
+        if (!definition)
+        {
+            SrLogger.LogWarning($"OnGadgetIDChanged: Could not Cast for a GadgetDefinition!");
+            return;
+        }
+
         SetHeldGadget(playerItemController._gadgetItem, definition);
     }
 
     public void SetHeldGadget(GadgetItem self, GadgetDefinition? gadgetDefinition)
     {
         Destroy(placeholderGadgetPrefabInstance);
+        placeholderGadgetPrefabInstance = null;
         
         if (!gadgetDefinition)
             return;
@@ -235,6 +254,8 @@ public partial class NetworkPlayer
 
         placeholderGadgetPrefabInstance.transform.parent = footprintTransform;
         placeholderGadgetPrefabInstance.transform.localPosition = Vector3.zero;
+        
+        ApplyGadgetLocalRotation();
         
         DontDestroyOnLoad(placeholderGadgetPrefabInstance);
     }

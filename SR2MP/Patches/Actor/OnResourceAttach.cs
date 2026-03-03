@@ -1,44 +1,42 @@
 ﻿using HarmonyLib;
+using Il2CppMonomiPark.SlimeRancher.DataModel;
+using SR2MP.Components.Actor;
 using SR2MP.Packets.Actor;
 
 namespace SR2MP.Patches.Actor;
 
 [HarmonyPatch(typeof(ResourceCycle), nameof(ResourceCycle.Attach))]
-public static class OnResourceAttach
+public static class ResourceCycleAttachPatch
 {
     public static void Prefix(ResourceCycle __instance, Joint joint)
     {
         if (handlingPacket) return;
+        if (!Main.Server.IsRunning() && !Main.Client.IsConnected) return;
+        if (joint == null) return;
 
-        if (joint.connectedBody)
-        {
-            var other = joint.connectedBody.GetComponent<ResourceCycle>();
+        var networkActor = __instance.GetComponent<NetworkActor>();
+        if (networkActor == null || !networkActor.LocallyOwned) return;
 
-            SceneContext.Instance.GameModel.identifiables.Remove(other._model.actorId);
-            SceneContext.Instance.GameModel.identifiablesByIdent[other._model.ident].Remove(other._model);
-            SceneContext.Instance.GameModel.DestroyIdentifiableModel(other._model);
-
-            SrLogger.LogMessage("destroy");
-
-            Destroyer.DestroyActor(other.gameObject, "SR2MP.OnResourceAttach");
-            joint.connectedBody = null;
-            return;
-        }
+        var actorId = networkActor.ActorId;
+        if (actorId.Value == 0) return;
 
         var spawner = joint.gameObject.GetComponentInParent<SpawnResource>();
-        if (!spawner)
-            return;
-        var index = spawner.SpawnJoints.IndexOf(joint);
+        if (spawner == null) return;
 
-        var id = joint.gameObject.GetComponentInParent<LandPlotLocation>()?._id ?? string.Empty;
+        var jointIndex = spawner.SpawnJoints.IndexOf(joint);
+        if (jointIndex < 0) return;
 
+        var plotId = joint.gameObject.GetComponentInParent<LandPlotLocation>()?._id ?? string.Empty;
+        
+        var spawnModel = spawner._model ?? new SpawnResourceModel();
+        
         var packet = new ResourceAttachPacket
         {
-            ActorId = __instance._model.actorId,
-            Joint = index,
-            PlotID = id,
+            ActorId = actorId,
+            PlotID = plotId,
+            Joint = jointIndex,
             SpawnerID = spawner.transform.position,
-            Model = spawner._model
+            Model = spawnModel
         };
 
         Main.SendToAllOrServer(packet);

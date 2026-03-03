@@ -5,7 +5,7 @@ namespace SR2MP.Packets;
 public struct EmptyPacket : IPacket
 {
     public PacketType Type { get; init; }
-    public readonly PacketReliability Reliability => PacketReliability.Reliable;
+    public PacketReliability Reliability { get; init; }
 
     public readonly void Serialise(PacketWriter writer) { }
 

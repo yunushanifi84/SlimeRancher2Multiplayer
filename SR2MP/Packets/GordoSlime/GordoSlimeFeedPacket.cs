@@ -1,0 +1,32 @@
+using SR2MP.Packets.Utils;
+
+namespace SR2MP.Packets.GordoSlime;
+
+public sealed class GordoSlimeFeedPacket : IPacket
+{
+    public string ID;
+    public int NewFoodCount;
+
+    // Needed for unregistered gordos.
+    public int RequiredFoodCount;
+    public int GordoType;
+
+    public PacketType Type => PacketType.GordoFeed;
+    public PacketReliability Reliability => PacketReliability.Reliable;
+
+    public void Serialise(PacketWriter writer)
+    {
+        writer.WriteString(ID);
+        writer.WritePackedInt(NewFoodCount);
+        writer.WritePackedInt(RequiredFoodCount);
+        writer.WritePackedInt(GordoType);
+    }
+
+    public void Deserialise(PacketReader reader)
+    {
+        ID = reader.ReadString();
+        NewFoodCount = reader.ReadPackedInt();
+        RequiredFoodCount = reader.ReadPackedInt();
+        GordoType = reader.ReadPackedInt();
+    }
+}

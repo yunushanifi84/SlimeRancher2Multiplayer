@@ -14,7 +14,7 @@ public static class OnActorDestroy
         {
             if (Main.Server.IsRunning() || Main.Client.IsConnected)
             {
-                if (source is "ResourceCycle.RegistryUpdate#1" or "SlimeFeral.Awake")
+                if (source is "SlimeFeral.Awake")
                 {
                     return false;
                 }
@@ -22,7 +22,7 @@ public static class OnActorDestroy
         }
         catch { }
 
-        if ((!Main.Server.IsRunning() && !Main.Client.IsConnected) || handlingPacket || !actorObj)
+        if (handlingPacket || !actorObj)
             return true;
 
         var actor = actorObj.GetComponent<IdentifiableActor>();
@@ -30,6 +30,10 @@ public static class OnActorDestroy
             return true;
 
         actorManager.Actors.Remove(actor.GetActorId().Value);
+        
+        if (!Main.Server.IsRunning() && !Main.Client.IsConnected)
+            return true;
+        
         try
         {
             var packet = new ActorDestroyPacket { ActorId = actor.GetActorId() };

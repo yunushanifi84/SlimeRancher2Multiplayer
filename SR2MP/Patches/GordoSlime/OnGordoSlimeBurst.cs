@@ -1,7 +1,7 @@
 using HarmonyLib;
-using SR2MP.Packets.Gordo;
+using SR2MP.Packets.GordoSlime;
 
-namespace SR2MP.Patches.Gordo;
+namespace SR2MP.Patches.GordoSlime;
 
 [HarmonyPatch(typeof(GordoEat), nameof(GordoEat.ImmediateReachedTarget))]
 public static class OnGordoBurst
@@ -10,7 +10,7 @@ public static class OnGordoBurst
     {
         if (handlingPacket) return;
 
-        var packet = new GordoBurstPacket
+        var packet = new GordoSlimeBurstPacket
         {
             ID = __instance.Id
         };

@@ -1,3 +1,4 @@
+using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.UI;
 using Il2CppMonomiPark.SlimeRancher.Weather;
 using Il2CppMonomiPark.SlimeRancher.World;
@@ -55,4 +56,16 @@ public static class GlobalVariables
     public static MarketUI? marketUIInstance;
 
     public const string MapEventKey = "fogRevealed";
+    
+    // Constants for ammo types
+    public const string SiloAmmo = "58d5bd4fc903e1c49aba61495aa74014";
+    public const string PlortCollectorAmmo = "83f638af7ebb11944b6b55c915889459";
+    // This is the duplicate PlotAmmoSetDefinition, the Coop Collector
+    public const string CoopAmmo = "e65dad0e2c627f8498d5a2b3b65f6215";
+    public const string FeederAmmo = "7e1edc80785d7894a928f24f5aebbccd";
+    
+    // Shortcut Properties
+    public static GameModel GameState => SceneContext.Instance.GameModel;
+
+    public static string[] Mods { get; internal set; }
 }

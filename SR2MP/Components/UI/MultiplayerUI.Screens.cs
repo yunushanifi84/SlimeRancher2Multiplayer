@@ -8,6 +8,7 @@ public sealed partial class MultiplayerUI
     private string portInput = string.Empty;
     private string hostPortInput = "1919";
     private bool allowCheatsInput;
+    public string connectionFailedReason = null!;
 
     private void FirstTimeScreen()
     {
@@ -59,6 +60,25 @@ public sealed partial class MultiplayerUI
         viewingSettings = false;
     }
 
+    private void DrawError()
+    {
+        switch (errorState)
+        {
+            case ErrorType.ConnectionDeny:
+                ConnectionFailedScreen();
+                break;
+        }
+    }
+
+    private void ConnectionFailedScreen()
+    {
+        DrawText("Failed to connect to server!");
+        DrawText(connectionFailedReason!);
+    
+        if (GUI.Button(CalculateButtonLayout(6), "Close"))
+            viewingSettings = true;
+    }
+
     private void MainMenuScreen()
     {
         if (GUI.Button(CalculateButtonLayout(6), "Settings"))
@@ -67,6 +87,7 @@ public sealed partial class MultiplayerUI
         DrawText("You must be in a save to host or connect!");
         DrawText("Make sure you join an EMPTY save before connecting, this save file WILL BE RESET.");
     }
+
 
     private void InGameScreen()
     {

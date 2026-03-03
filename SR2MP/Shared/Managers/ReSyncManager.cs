@@ -3,10 +3,12 @@ using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.Economy;
 using Il2CppMonomiPark.SlimeRancher.Event;
 using Il2CppMonomiPark.SlimeRancher.Pedia;
+using Il2CppMonomiPark.SlimeRancher.Player;
 using Il2CppMonomiPark.SlimeRancher.Weather;
 using MelonLoader;
 using SR2MP.Components.UI;
 using SR2MP.Packets;
+using SR2MP.Packets.Ammo;
 using SR2MP.Packets.Economy;
 using SR2MP.Packets.Internal;
 using SR2MP.Packets.Loading;
@@ -39,7 +41,7 @@ public class ReSyncManager
         var rainbowMoney = SceneContext.Instance.PlayerState.GetCurrency(
             GameContext.Instance.LookupDirector._currencyList[1].Cast<ICurrency>());
 
-        var ackPacket = new ConnectAckPacket
+        var approvePacket = new ConnectionApprovePacket
         {
             initialJoin = false,
             PlayerId = playerId,
@@ -49,7 +51,7 @@ public class ReSyncManager
             RainbowMoney = rainbowMoney,
             AllowCheats = Main.AllowCheats
         };
-        Main.Server.SendToClient(ackPacket, endPoint);
+        Main.Server.SendToClient(approvePacket, endPoint);
 
         SendGordoSlimesPacket(endPoint);
         SendSwitchesPacket(endPoint);
@@ -60,22 +62,24 @@ public class ReSyncManager
         SendPediaPacket(endPoint);
         SendMapPacket(endPoint);
         SendAccessDoorsPacket(endPoint);
-        SendPricesPacket(endPoint);
         SendActorsPacket(endPoint, PlayerIdGenerator.GetPlayerIDNumber(playerId));
+        SendPricesPacket(endPoint);
 
         SrLogger.LogMessage($"Player {playerId} resynced!", $"Player {playerId} ({endPoint}) resynced!");
     }
-    
+
     public void RequestResync()
     {
         if (Main.Client.IsConnected)
         {
             var resyncPacket = new ResyncRequestPacket();
             Main.Client.SendPacket(resyncPacket);
-            MultiplayerUI.Instance.RegisterSystemMessage("Resync requested...", $"SYSTEM_RESYNC_REQUEST_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", MultiplayerUI.SystemMessageNormal);
+            MultiplayerUI.Instance.RegisterSystemMessage("Resync requested...",
+                $"SYSTEM_RESYNC_REQUEST_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+                MultiplayerUI.SystemMessageNormal);
         }
     }
-    
+
     public void SynchronizeAll()
     {
         foreach (var client in Main.Server.clientManager.GetAllClients())
@@ -117,13 +121,14 @@ public class ReSyncManager
         Main.Server.SendToClient(chatPacket, endPoint);
     }
 
-   private static void SendUpgradesPacket(IPEndPoint client)
+    private static void SendUpgradesPacket(IPEndPoint client)
     {
         var upgrades = new Dictionary<byte, sbyte>();
 
         foreach (var upgrade in GameContext.Instance.LookupDirector._upgradeDefinitions.items)
         {
-            upgrades.Add((byte)upgrade._uniqueId, (sbyte)SceneContext.Instance.PlayerState._model.upgradeModel.GetUpgradeLevel(upgrade));
+            upgrades.Add((byte)upgrade._uniqueId,
+                (sbyte)SceneContext.Instance.PlayerState._model.upgradeModel.GetUpgradeLevel(upgrade));
         }
 
         var upgradesPacket = new InitialUpgradesPacket { Upgrades = upgrades };
@@ -141,10 +146,7 @@ public class ReSyncManager
             refineryItems.Add(itemId, count);
         }
 
-        var refineryPacket = new InitialRefineryPacket
-        {
-            Items = refineryItems
-        };
+        var refineryPacket = new InitialRefineryPacket { Items = refineryItems };
 
         Main.Server.SendToClient(refineryPacket, client);
     }
@@ -193,10 +195,7 @@ public class ReSyncManager
         foreach (var map in maps)
             mapsList.Add(map.Key);
 
-        var mapPacket = new InitialMapPacket
-        {
-            UnlockedNodes = mapsList
-        };
+        var mapPacket = new InitialMapPacket { UnlockedNodes = mapsList };
 
         Main.Server.SendToClient(mapPacket, client);
     }
@@ -205,19 +204,12 @@ public class ReSyncManager
     {
         var doorsList = new List<InitialAccessDoorsPacket.Door>();
 
-        foreach (var door in SceneContext.Instance.GameModel.doors)
+        foreach (var door in GameState.doors)
         {
-            doorsList.Add(new InitialAccessDoorsPacket.Door
-            {
-                ID = door.Key,
-                State = door.Value.state
-            });
+            doorsList.Add(new InitialAccessDoorsPacket.Door { ID = door.Key, State = door.Value.state });
         }
 
-        var accessDoorsPacket = new InitialAccessDoorsPacket
-        {
-            Doors = doorsList
-        };
+        var accessDoorsPacket = new InitialAccessDoorsPacket { Doors = doorsList };
 
         Main.Server.SendToClient(accessDoorsPacket, client);
     }
@@ -231,14 +223,22 @@ public class ReSyncManager
             actorsList.Add(NetworkActorManager.CreateInitialActor(model));
         }
 
-        foreach (var model in SceneContext.Instance.GameModel.AllGadgets())
-            actorsList.Add(NetworkActorManager.CreateInitialActor(model.Cast<IdentifiableModel>()));
-        
+        foreach (var model in GameState.AllGadgets())
+        {
+            var gadget = model.TryCast<GadgetModel>();
+            if (gadget == null)
+                return;
+
+            actorsList.Add(NetworkActorManager.CreateInitialGadget(gadget));
+        }
+
         var actorsPacket = new InitialActorsPacket
         {
-            StartingActorID = (uint)NetworkActorManager.GetHighestActorIdInRange(playerIndex * 10000, (playerIndex * 10000) + 10000),
+            StartingActorID =
+                (uint)NetworkActorManager.GetHighestActorIdInRange(playerIndex * 10000,
+                    (playerIndex * 10000) + 10000) + 1,
             Actors = actorsList,
-            WorldTime = SceneContext.Instance.GameModel.world.worldTime
+            WorldTime = GameState.world.worldTime
         };
 
         Main.Server.SendToClient(actorsPacket, client);
@@ -248,95 +248,158 @@ public class ReSyncManager
     {
         var switchesList = new List<InitialSwitchesPacket.Switch>();
 
-        foreach (var switchKeyValuePair in SceneContext.Instance.GameModel.switches)
+        foreach (var switchKeyValuePair in GameState.switches)
         {
             switchesList.Add(new InitialSwitchesPacket.Switch
             {
-                ID = switchKeyValuePair.key,
-                State = switchKeyValuePair.value.state
+                ID = switchKeyValuePair.key, State = switchKeyValuePair.value.state
             });
         }
 
-        var switchesPacket = new InitialSwitchesPacket
-        {
-            Switches = switchesList
-        };
+        var switchesPacket = new InitialSwitchesPacket { Switches = switchesList };
 
         Main.Server.SendToClient(switchesPacket, client);
     }
 
     private static void SendGordoSlimesPacket(IPEndPoint client)
     {
-        var gordosList = new List<InitialGordosPacket.Gordo>();
+        var gordoSlimeList = new List<InitialGordosPacket.GordoSlime>();
 
-        foreach (var gordo in SceneContext.Instance.GameModel.gordos)
+        foreach (var gordoSlime in GameState.gordos)
         {
-            var eatCount = gordo.value.GordoEatenCount;
+            var eatCount = gordoSlime.value.GordoEatenCount;
             if (eatCount == -1)
-                eatCount = gordo.value.targetCount;
+                eatCount = gordoSlime.value.targetCount;
 
-            gordosList.Add(new InitialGordosPacket.Gordo
+            gordoSlimeList.Add(new InitialGordosPacket.GordoSlime
             {
-                Id = gordo.key,
+                Id = gordoSlime.key,
                 EatenCount = eatCount,
-                RequiredEatCount = gordo.value.targetCount,
-                GordoSlimeType = NetworkActorManager.GetPersistentID(gordo.value.identifiableType),
-                WasSeen = gordo.value.GordoSeen
+                RequiredEatCount = gordoSlime.value.targetCount,
+                GordoSlimeType = NetworkActorManager.GetPersistentID(gordoSlime.value.identifiableType),
+                WasSeen = gordoSlime.value.GordoSeen
                 // Popped = gordo.value.GordoEatenCount > gordo.value.gordoEatCount
             });
         }
 
-        var gordosPacket = new InitialGordosPacket
-        {
-            GordoSlimes = gordosList
-        };
+        var gordosPacket = new InitialGordosPacket { GordoSlimes = gordoSlimeList };
 
         Main.Server.SendToClient(gordosPacket, client);
     }
 
     private static void SendPlotsPacket(IPEndPoint client)
     {
-        var plotsList = new List<InitialLandPlotsPacket.BasePlot>();
+        var landplotsList = new List<InitialLandPlotsPacket.BasePlot>();
 
-        foreach (var plotKeyValuePair in SceneContext.Instance.GameModel.landPlots)
+        foreach (var (id, plot) in GameState.landPlots)
         {
-            var plot = plotKeyValuePair.Value;
-            var id = plotKeyValuePair.Key;
-
             INetObject? data = plot.typeId switch
             {
                 LandPlot.Id.GARDEN => new InitialLandPlotsPacket.GardenData
                 {
-                    Crop = plot.resourceGrowerDefinition == null ? 9 : NetworkActorManager.GetPersistentID(plot.resourceGrowerDefinition?._primaryResourceType!)
+                    Crop = plot.resourceGrowerDefinition == null
+                        ? 9
+                        : NetworkActorManager.GetPersistentID(plot.resourceGrowerDefinition?._primaryResourceType!)
+                },
+                LandPlot.Id.POND => new InitialLandPlotsPacket.CoopPondData()
+                {
+                    CollectorAmmo = new NetworkAmmo
+                    {
+                        AmmoSlots = plot.siloAmmo[PlortCollectorAmmo].Slots
+                            .ToDictionary<AmmoSlot, int, NetworkAmmoSlot>(slot => (int)slot.GetNextSlot()!,
+                                slot => new NetworkAmmoSlot()
+                                {
+                                    Count = slot.Count,
+                                    Identifiable = NetworkActorManager.GetPersistentID(slot._id),
+                                    SlotDefinition = NetworkAmmoManager.GetId(slot.Definition)
+                                })
+                    }
+                },
+                LandPlot.Id.COOP => new InitialLandPlotsPacket.CoopPondData()
+                {
+                    CollectorAmmo = new NetworkAmmo
+                    {
+                        AmmoSlots = plot.siloAmmo[CoopAmmo].Slots
+                            .ToDictionary<AmmoSlot, int, NetworkAmmoSlot>(slot => (int)slot.GetNextSlot()!,
+                                slot => new NetworkAmmoSlot()
+                                {
+                                    Count = slot.Count,
+                                    Identifiable = NetworkActorManager.GetPersistentID(slot._id),
+                                    SlotDefinition = NetworkAmmoManager.GetId(slot.Definition)
+                                })
+                    }
+                },
+                LandPlot.Id.INCINERATOR => new InitialLandPlotsPacket.IncineratorData()
+                {
+                    AshLevel = plot.ashUnits,
+                    PlortCollectorAmmo = new NetworkAmmo
+                    {
+                        AmmoSlots = plot.siloAmmo[PlortCollectorAmmo].Slots
+                            .ToDictionary<AmmoSlot, int, NetworkAmmoSlot>(slot => (int)slot.GetNextSlot()!,
+                                slot => new NetworkAmmoSlot()
+                                {
+                                    Count = slot.Count,
+                                    Identifiable = NetworkActorManager.GetPersistentID(slot._id),
+                                    SlotDefinition = NetworkAmmoManager.GetId(slot.Definition)
+                                })
+                    }
                 },
                 LandPlot.Id.SILO => new InitialLandPlotsPacket.SiloData
-                    {},
+                {
+                    SelectedSlots = plot.siloStorageIndices.ToList().ConvertAll<byte>(val => (byte)val),
+                    Ammo = new NetworkAmmo
+                    {
+                        AmmoSlots = plot.siloAmmo[SiloAmmo].Slots
+                            .ToDictionary<AmmoSlot, int, NetworkAmmoSlot>(slot => (int)slot.GetNextSlot()!,
+                                slot => new NetworkAmmoSlot()
+                                {
+                                    Count = slot.Count,
+                                    Identifiable = NetworkActorManager.GetPersistentID(slot._id),
+                                    SlotDefinition = NetworkAmmoManager.GetId(slot.Definition)
+                                })
+                    }
+                },
+                LandPlot.Id.CORRAL => new InitialLandPlotsPacket.CorralData()
+                { 
+                    AutoFeederSpeed = (byte)plot.feederCycleSpeed,
+                    PlortCollectorAmmo = new NetworkAmmo()
+                    {
+                        AmmoSlots = plot.siloAmmo[PlortCollectorAmmo].Slots.ToDictionary<AmmoSlot, int, NetworkAmmoSlot>(slot => (int)slot.GetNextSlot()!,
+                            slot => new NetworkAmmoSlot()
+                            {
+                                Count = slot.Count,
+                                Identifiable = NetworkActorManager.GetPersistentID(slot._id),
+                                SlotDefinition = NetworkAmmoManager.GetId(slot.Definition)
+                            })
+                    },
+                    AutoFeederAmmo = new NetworkAmmo()
+                    {
+                        AmmoSlots = plot.siloAmmo[FeederAmmo].Slots.ToDictionary<AmmoSlot, int, NetworkAmmoSlot>(slot => (int)slot.GetNextSlot()!,
+                            slot => new NetworkAmmoSlot()
+                            {
+                                Count = slot.Count,
+                                Identifiable = NetworkActorManager.GetPersistentID(slot._id),
+                                SlotDefinition = NetworkAmmoManager.GetId(slot.Definition)
+                            })
+                    }
+                },
                 _ => null
             };
 
-            plotsList.Add(new InitialLandPlotsPacket.BasePlot
+            landplotsList.Add(new InitialLandPlotsPacket.BasePlot
             {
-                ID = id,
-                Type = plot.typeId,
-                Upgrades = plot.upgrades,
-                Data = data
+                ID = id, Type = plot.typeId, Upgrades = plot.upgrades, Data = data
             });
         }
 
-        var plotsPacket = new InitialLandPlotsPacket
-        {
-            Plots = plotsList
-        };
+        var landplotsPacket = new InitialLandPlotsPacket { LandPlots = landplotsList };
 
-        Main.Server.SendToClient(plotsPacket, client);
+        Main.Server.SendToClient(landplotsPacket, client);
     }
 
     private static void SendPricesPacket(IPEndPoint client)
     {
-        var pricesPacket = new MarketPricePacket
-        {
-            Prices = MarketPricesArray!
-        };
+        var pricesPacket = new MarketPricePacket { Prices = MarketPricesArray! };
 
         Main.Server.SendToClient(pricesPacket, client);
     }

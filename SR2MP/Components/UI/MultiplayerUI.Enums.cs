@@ -19,13 +19,13 @@ public sealed partial class MultiplayerUI
     public enum ErrorType : byte
     {
         None,
-        UnknownError,
-        InvalidIP,
-        IPNotFound
+        ConnectionDeny,
+        Kick,
     }
 
     public enum HelpTopic : byte
     {
+        None,
         Root,
         PlayIt,
         SyncState,

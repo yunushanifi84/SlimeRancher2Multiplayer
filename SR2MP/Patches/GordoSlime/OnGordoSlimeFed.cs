@@ -1,16 +1,16 @@
 using HarmonyLib;
 using SR2MP.Packets.FX;
-using SR2MP.Packets.Gordo;
+using SR2MP.Packets.GordoSlime;
 using SR2MP.Shared.Managers;
 
-namespace SR2MP.Patches.Gordo;
+namespace SR2MP.Patches.GordoSlime;
 
 [HarmonyPatch(typeof(GordoEat), nameof(GordoEat.DoEat))]
 public static class OnGordoFed
 {
     public static void Postfix(GordoEat __instance)
     {
-        var packet = new GordoFeedPacket
+        var packet = new GordoSlimeFeedPacket
         {
             ID = __instance.Id,
             NewFoodCount = __instance.GordoModel.GordoEatenCount,

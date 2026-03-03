@@ -78,7 +78,7 @@ public sealed class ClientPacketManager
         }
 
         // Handle reliability ACK packets
-        if (packetType == 254)
+        if (packetType == (byte)PacketType.ReservedAcknowledge)
         {
             try
             {
@@ -96,6 +96,7 @@ public sealed class ClientPacketManager
         // Sends ACK for reliable packets
         if (packetReliability != PacketReliability.Unreliable)
         {
+            if (!Main.Client.IsConnected) return;
             SendAck(packetId, packetType);
         }
 
@@ -149,7 +150,7 @@ public sealed class ClientPacketManager
     {
         if (!Main.Client.IsConnected) return;
 
-        var ackPacket = new AckPacket
+        var ackPacket = new AckPacket()
         {
             PacketId = packetId,
             OriginalPacketType = packetType

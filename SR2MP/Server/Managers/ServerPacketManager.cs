@@ -79,7 +79,7 @@ public sealed class ServerPacketManager
         }
 
         // Handle reliability ACK packets
-        if (packetType == 254)
+        if (packetType == (byte)PacketType.ReservedAcknowledge)
         {
             try
             {
@@ -98,6 +98,7 @@ public sealed class ServerPacketManager
         // Otherwise clients will resend if the ACK packet was lost
         if (packetReliability != PacketReliability.Unreliable)
         {
+            //if (!clientManager.TryGetClient(clientEp, out _)) return;
             SendAck(clientEp, packetId, packetType);
         }
 
@@ -154,7 +155,7 @@ public sealed class ServerPacketManager
         if (!clientManager.TryGetClient(clientEp, out _))
             return;
 
-        var ackPacket = new AckPacket
+        var ackPacket = new AckPacket()
         {
             PacketId = packetId,
             OriginalPacketType = packetType

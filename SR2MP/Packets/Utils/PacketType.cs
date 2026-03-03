@@ -4,7 +4,8 @@ public enum PacketType : byte
 {   // Type                       // Hierarchy                                    // Frequency                          // Use Case
     None = 0,                     // Both Ways                                    Unused                                Empty packet data, exists for convention purposes and default none value
     Connect = 1,                  // Client -> Server                             Low (manual)                          Try to connect to Server
-    ConnectAck = 2,               // Server -> Client                             Low (depends on connect)              Initiate Player Join
+    ConnectionApprove = 2,        // Server -> Client                             Low (depends on connect)              Initiate Player Join
+    ConnectionDeny = 100,         // Server -> Client                             Low (can be manual)                   On Connection Deny
     Close = 3,                    // Server -> All Clients                        Low (manual)                          Broadcast Server Close
     PlayerJoin = 4,               // Client -> Server                             Low (manual)                          Join a World
     BroadcastPlayerJoin = 5,      // Server -> All Clients                        Low (depends on join)                 Add Player on other Clients
@@ -25,7 +26,7 @@ public enum PacketType : byte
     ActorTransfer = 20,           // Both Ways                                    High (can be manual)                  On Actor Transfer
     InitialActors = 21,           // Server -> Client                             Low                                   Actors on Load
     NewLandPlot = 22,             // Both Ways                                    Low (manual)                          New land plot set
-    InitialPlots = 23,            // Server -> Client                             Low                                   Plots on Load
+    InitialLandPlots = 23,        // Server -> Client                             Low                                   Plots on Load
     WorldFX = 24,                 // Both Ways                                    High                                  On World FX
     InitialPlayerUpgrades = 25,   // Server -> Client                             Low                                   Player Upgrades on Load
     PlayerUpgrade = 26,           // Both Ways                                    Low (manual)                          On Upgrade
@@ -53,6 +54,19 @@ public enum PacketType : byte
     LandPlotUpgrade = 48,         // Both Ways                                    Low (manual)                          Land plot upgrade
     PlayerGadgetUpdate = 49,      // Both Ways                                    Very High (depends on player mode)    Gadget Mode toggle
     ResyncRequest = 50,           // Client -> Server                             Low (manual)                          Request a resync from server
-    ReservedAck = 254,            // Both Ways                                    Very High                             For ACK packets
+    GardenUpdate = 51,            // Both Ways                                    High                                  On Garden update
+    GardenOwnership = 52,         // Both Ways                                    Medium (manual)                       On Garden ownership transfer
+    AmmoIncrement = 53,
+    AmmoAdd = 54,
+    AmmoAddToSlot = 55,
+    AmmoDecrement = 56,
+    AmmoDecrementSelected = 57,
+    SiloSlotSelect = 58,          // Both Ways                                    Medium (manual)                       On Silo Slot Switch
+    AutoFeederSpeed = 59,         // Both Ways                                    Low (manual)                          On Auto Feeder speed switch
+    AutoFeederDispense = 60,      // Both Ways                                    Medium                                On Auto Feeder food dispense
+    PlortCollection = 61,         // Both Ways                                    Medium (can be manual)                On Auto Feeder food dispense    
+    ModSyncAck = 62,              // Client -> Server                             Low (manual)                          Mod names on incompatiable mod
+    ModSync = 63,                 // Server -> Client                             Low (manual)                          Sync Mod names on incompatiable mod
+    ReservedAcknowledge = 254,    // Both Ways                                    Very High                             For acknowledge packets
     ReservedCompression = 255     // Both Ways                                    Very High                             For packet compression
 }

@@ -114,7 +114,8 @@ public sealed class SR2MPClient
             var connectPacket = new ConnectPacket
             {
                 PlayerId = OwnPlayerId,
-                Username = Main.Username
+                Username = Main.Username,
+                ModHashes = Mods.ToList().ConvertAll(mod => mod.Hash())
             };
 
             SendPacket(connectPacket);
@@ -136,6 +137,11 @@ public sealed class SR2MPClient
             return;
         SrLogger.LogError("Connection timeout: Server did not respond within 10 seconds", SrLogTarget.Both);
         Disconnect();
+    }
+
+    public void UpdateConnectionStatus(bool state)
+    {
+        isConnected = state;
     }
 
     private void ReceiveLoop()

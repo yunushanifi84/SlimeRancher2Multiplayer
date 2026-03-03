@@ -20,10 +20,10 @@ public sealed partial class NetworkActorManager
         Actors.Clear();
 
         foreach (var type in context.AutoSaveDirector._saveReferenceTranslation._identifiableTypeLookup)
-        {
             ActorTypes.TryAdd(GetPersistentID(type.value), type.value);
-        }
-
+        
+        ActorTypes[-1] = null!;
+        
         MelonCoroutines.Start(ZoneLoadingLoop());
     }
 
@@ -107,7 +107,7 @@ public sealed partial class NetworkActorManager
     public static long GetHighestActorIdInRange(long min, long max)
     {
         var result = min;
-        foreach (var actor in SceneContext.Instance.GameModel.identifiables)
+        foreach (var actor in GameState.identifiables)
         {
             var id = actor.value.actorId.Value;
             if (id < min || id >= max)

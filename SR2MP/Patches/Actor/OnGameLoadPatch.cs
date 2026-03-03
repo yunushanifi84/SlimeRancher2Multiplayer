@@ -10,7 +10,7 @@ public static class OnGameLoadPatch
 {
     public static void Postfix() => Main.Server.OnServerStarted += () =>
     {
-        foreach (var actor in SceneContext.Instance.GameModel.identifiables)
+        foreach (var actor in GameState.identifiables)
         {
             if (actor.value.TryCast<ActorModel>() == null) continue;
 
@@ -27,7 +27,7 @@ public static class OnGameLoadPatch
             actorManager.Actors[actor.value.actorId.Value] = actor.value;
         }
 
-        SceneContext.Instance.GameModel._actorIdProvider._nextActorId =
+        GameState._actorIdProvider._nextActorId =
             NetworkActorManager.GetHighestActorIdInRange(0, 10000);
     };
 }

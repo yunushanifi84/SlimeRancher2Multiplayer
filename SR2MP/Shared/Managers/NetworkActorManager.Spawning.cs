@@ -18,18 +18,19 @@ public sealed partial class NetworkActorManager
         }
 
         var scene = NetworkSceneManager.GetSceneGroup(sceneId);
-        var model = SceneContext.Instance.GameModel.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position);
-        model.eulerRotation = rotation.ToEuler();
+        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position);
+        model.eulerRotation = rotation.eulerAngles;
         
         handlingPacket = true;
         var gadget = GadgetDirector.InstantiateGadgetFromModel(model);
         handlingPacket = false;
         
-        gadget.transform.rotation = rotation;
+        gadget.transform.SetPositionAndRotation(position, rotation);
         
         identModel = model.Cast<IdentifiableModel>();
         return true;
     }
+    
     public bool TrySpawnNetworkActor(ActorId actorId, Vector3 position, Quaternion rotation, int typeId, int sceneId, out IdentifiableModel? model)
     {
         model = null;
@@ -54,18 +55,18 @@ public sealed partial class NetworkActorManager
         if (ActorIDAlreadyInUse(actorId))
             return false;
 
-        model = SceneContext.Instance.GameModel.CreateActorModel(
-                actorId,
-                type,
-                scene,
-                position,
-                rotation).Cast<IdentifiableModel>();
+        model = GameState.CreateActorModel(
+            actorId,
+            type,
+            scene,
+            position,
+            rotation).Cast<IdentifiableModel>();
 
         if (model == null)
             return false;
 
-        SceneContext.Instance.GameModel.identifiables[actorId] = model;
-        if (SceneContext.Instance.GameModel.identifiablesByIdent.TryGetValue(type, out var actors))
+        GameState.identifiables[actorId] = model;
+        if (GameState.identifiablesByIdent.TryGetValue(type, out var actors))
         {
             actors.Add(model);
         }
@@ -73,7 +74,7 @@ public sealed partial class NetworkActorManager
         {
             actors = new CppCollections.List<IdentifiableModel>();
             actors.Add(model);
-            SceneContext.Instance.GameModel.identifiablesByIdent.Add(type, actors);
+            GameState.identifiablesByIdent.Add(type, actors);
         }
 
         handlingPacket = true;
@@ -114,8 +115,8 @@ public sealed partial class NetworkActorManager
         }
 
         var scene = NetworkSceneManager.GetSceneGroup(sceneId);
-        var model = SceneContext.Instance.GameModel.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position);
-        model.eulerRotation = Quaternion.ToEulerAngles(rotation);
+        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position);
+        model.eulerRotation = rotation.eulerAngles;
 
         identifiableModel = model.Cast<IdentifiableModel>();
         
@@ -123,7 +124,7 @@ public sealed partial class NetworkActorManager
         var gadget = GadgetDirector.InstantiateGadgetFromModel(model);
         handlingPacket = false;
         
-        gadget.transform.rotation = rotation;
+        gadget.transform.SetPositionAndRotation(position, rotation);
         
         return true;
     }
@@ -175,18 +176,18 @@ public sealed partial class NetworkActorManager
         if (ActorIDAlreadyInUse(actorId))
             return false;
 
-        model = SceneContext.Instance.GameModel.CreateActorModel(
-                actorId,
-                type,
-                scene,
-                position,
-                rotation);
+        model = GameState.CreateActorModel(
+            actorId,
+            type,
+            scene,
+            position,
+            rotation);
 
         if (model == null)
             return false;
 
-        SceneContext.Instance.GameModel.identifiables[actorId] = model;
-        if (SceneContext.Instance.GameModel.identifiablesByIdent.TryGetValue(type, out var actors))
+        GameState.identifiables[actorId] = model;
+        if (GameState.identifiablesByIdent.TryGetValue(type, out var actors))
         {
             actors.Add(model);
         }
@@ -194,7 +195,7 @@ public sealed partial class NetworkActorManager
         {
             actors = new CppCollections.List<IdentifiableModel>();
             actors.Add(model);
-            SceneContext.Instance.GameModel.identifiablesByIdent.Add(type, actors);
+            GameState.identifiablesByIdent.Add(type, actors);
         }
 
         handlingPacket = true;
@@ -244,20 +245,20 @@ public sealed partial class NetworkActorManager
         if (ActorIDAlreadyInUse(actorId))
             return false;
 
-        model = SceneContext.Instance.GameModel.CreateSlimeActorModel(
-                actorId,
-                type.Cast<SlimeDefinition>(),
-                scene,
-                position,
-                rotation);
+        model = GameState.CreateSlimeActorModel(
+            actorId,
+            type.Cast<SlimeDefinition>(),
+            scene,
+            position,
+            rotation);
 
         if (model == null)
             return false;
 
         model.Cast<SlimeModel>().Emotions = emotions;
 
-        SceneContext.Instance.GameModel.identifiables[actorId] = model;
-        if (SceneContext.Instance.GameModel.identifiablesByIdent.TryGetValue(type, out var actors))
+        GameState.identifiables[actorId] = model;
+        if (GameState.identifiablesByIdent.TryGetValue(type, out var actors))
         {
             actors.Add(model);
         }
@@ -265,7 +266,7 @@ public sealed partial class NetworkActorManager
         {
             actors = new CppCollections.List<IdentifiableModel>();
             actors.Add(model);
-            SceneContext.Instance.GameModel.identifiablesByIdent.Add(type, actors);
+            GameState.identifiablesByIdent.Add(type, actors);
         }
 
         handlingPacket = true;
@@ -317,12 +318,12 @@ public sealed partial class NetworkActorManager
         if (ActorIDAlreadyInUse(actorId))
             return false;
 
-        model = SceneContext.Instance.GameModel.CreateActorModel(
-                actorId,
-                type,
-                scene,
-                position,
-                rotation);
+        model = GameState.CreateActorModel(
+            actorId,
+            type,
+            scene,
+            position,
+            rotation);
 
         if (model == null)
             return false;
@@ -337,8 +338,8 @@ public sealed partial class NetworkActorManager
 
         plortModel.destroyTime = destroyTime;
 
-        SceneContext.Instance.GameModel.identifiables[actorId] = model;
-        if (SceneContext.Instance.GameModel.identifiablesByIdent.TryGetValue(type, out var actors))
+        GameState.identifiables[actorId] = model;
+        if (GameState.identifiablesByIdent.TryGetValue(type, out var actors))
         {
             actors.Add(model);
         }
@@ -346,7 +347,7 @@ public sealed partial class NetworkActorManager
         {
             actors = new CppCollections.List<IdentifiableModel>();
             actors.Add(model);
-            SceneContext.Instance.GameModel.identifiablesByIdent.Add(type, actors);
+            GameState.identifiablesByIdent.Add(type, actors);
         }
 
         handlingPacket = true;
@@ -405,12 +406,12 @@ public sealed partial class NetworkActorManager
         if (ActorIDAlreadyInUse(actorId))
             return false;
 
-        model = SceneContext.Instance.GameModel.CreateActorModel(
-                actorId,
-                type,
-                scene,
-                position,
-                rotation);
+        model = GameState.CreateActorModel(
+            actorId,
+            type,
+            scene,
+            position,
+            rotation);
 
         if (model == null)
         {
@@ -426,13 +427,13 @@ public sealed partial class NetworkActorManager
                 $"Resource Actor failed to initialize: Did not create a ProduceModel successfully.\n\tActor ID: {actorId},\n\tIdentifiable Type: {type.name}");
             return false;
         }
-
+        
         produceModel.destroyTime = destroyTime;
         produceModel.state = state;
         produceModel.progressTime = progress;
 
-        SceneContext.Instance.GameModel.identifiables[actorId] = model;
-        if (SceneContext.Instance.GameModel.identifiablesByIdent.TryGetValue(type, out var actors))
+        GameState.identifiables[actorId] = model;
+        if (GameState.identifiablesByIdent.TryGetValue(type, out var actors))
         {
             actors.Add(model);
         }
@@ -440,7 +441,7 @@ public sealed partial class NetworkActorManager
         {
             actors = new CppCollections.List<IdentifiableModel>();
             actors.Add(model);
-            SceneContext.Instance.GameModel.identifiablesByIdent.Add(type, actors);
+            GameState.identifiablesByIdent.Add(type, actors);
         }
 
         handlingPacket = true;
@@ -459,8 +460,59 @@ public sealed partial class NetworkActorManager
         actor.transform.position = position;
         actorManager.Actors[actorId.Value] = model;
 
-        networkComponent.SetResourceState(state, progress);
-        actor.GetComponent<ResourceCycle>()?.AttachToNearest();
+        var cycle = actor.GetComponent<ResourceCycle>();
+        
+        if (actorData.JointIndex >= 0 && cycle != null)
+        {
+            Joint? targetJoint = null;
+
+            if (!string.IsNullOrEmpty(actorData.PlotID))
+            {
+                if (GameState.landPlots.TryGetValue(actorData.PlotID, out var plotModel)
+                    && plotModel.gameObj)
+                {
+                    var spawner = plotModel.gameObj.GetComponentInChildren<SpawnResource>();
+                    if (spawner != null && actorData.JointIndex < spawner.SpawnJoints.Count)
+                        targetJoint = spawner.SpawnJoints[actorData.JointIndex];
+                }
+            }
+            else
+            {
+                foreach (var spawner in Object.FindObjectsOfType<SpawnResource>())
+                {
+                    if (Vector3.Distance(spawner.transform.position, actorData.SpawnerPosition) < 0.1f)
+                    {
+                        if (actorData.JointIndex < spawner.SpawnJoints.Count)
+                            targetJoint = spawner.SpawnJoints[actorData.JointIndex];
+                        break;
+                    }
+                }
+            }
+
+            if (targetJoint != null)
+            {
+                handlingPacket = true;
+                cycle.Attach(targetJoint);
+                handlingPacket = false;
+                
+                produceModel.state = state;
+                produceModel.progressTime = progress;
+            }
+        }
+        
+        if (cycle != null)
+        {
+            if (state == ResourceCycle.State.UNRIPE)
+            {
+                actor.transform.localScale = cycle._defaultScale * 0.33f;
+                if (cycle._vacuumable)
+                    cycle._vacuumable.enabled = false;
+            }
+            else
+            {
+                networkComponent.SetResourceState(state, progress, true);
+            }
+        }
 
         return true;
     }

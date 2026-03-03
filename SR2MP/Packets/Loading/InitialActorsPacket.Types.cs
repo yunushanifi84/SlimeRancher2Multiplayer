@@ -1,3 +1,4 @@
+using Il2CppMonomiPark.SlimeRancher.DataModel;
 using SR2MP.Packets.Utils;
 using Unity.Mathematics;
 
@@ -83,6 +84,24 @@ public sealed partial class InitialActorsPacket
             Emotions = reader.ReadFloat4();
         }
     }
+    public sealed class LinkedGadget : ActorBase
+    {
+        public long LinkedActorId;
+        
+        protected override ActorType Type => ActorType.LinkedGadget;
+
+        public override void Serialise(PacketWriter writer)
+        {
+            base.Serialise(writer);
+            writer.WritePackedLong(LinkedActorId);
+        }
+
+        public override void Deserialise(PacketReader reader)
+        {
+            base.Deserialise(reader);
+            LinkedActorId =  reader.ReadPackedLong();
+        }
+    }
 
     public abstract class Destroyable : ActorBase
     {
@@ -105,6 +124,10 @@ public sealed partial class InitialActorsPacket
     {
         public double ProgressTime;
         public ResourceCycle.State ResourceState;
+        
+        public int JointIndex = -1;
+        public string PlotID = string.Empty;
+        public Vector3 SpawnerPosition;
 
         protected override ActorType Type => ActorType.Resource;
 
@@ -113,6 +136,9 @@ public sealed partial class InitialActorsPacket
             base.Serialise(writer);
             writer.WriteDouble(ProgressTime);
             writer.WritePackedEnum(ResourceState);
+            writer.WriteInt(JointIndex);
+            writer.WriteString(PlotID);
+            writer.WriteVector3(SpawnerPosition);
         }
 
         public override void Deserialise(PacketReader reader)
@@ -120,6 +146,9 @@ public sealed partial class InitialActorsPacket
             base.Deserialise(reader);
             ProgressTime = reader.ReadDouble();
             ResourceState = reader.ReadPackedEnum<ResourceCycle.State>();
+            JointIndex = reader.ReadInt();
+            PlotID = reader.ReadString();
+            SpawnerPosition = reader.ReadVector3();
         }
     }
 
