@@ -32,7 +32,14 @@ public static class StartupCheck
 
     public static void Initialize()
     {
-        if (devMode) return;
+        if (devMode)
+        {
+            for (var i = 0; i <= 100; i++)
+            {
+                SrLogger.LogWarning("DEV BUILD!");
+            }
+            return;
+        }
         
         var installedGameVersion = MelonLoader.InternalUtils.UnityInformationHandler.GameVersion;
 
