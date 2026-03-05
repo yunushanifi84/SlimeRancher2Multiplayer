@@ -172,24 +172,19 @@ public sealed class PacketWriter : PacketBuffer
     public void WriteSet<T>(HashSet<T>? set, Action<PacketWriter, T> writer)
         => WriteCollection(set?.Count ?? 0, set ?? Enumerable.Empty<T>(), writer);
 
-    private void WriteCppCollection<T>(int count, CppCollections.IEnumerable<T> items, Action<PacketWriter, T> writer)
-    {
-        WriteUShort((ushort)count);
-
-        var enumerator = items.GetEnumerator();
-        var casted = enumerator.Cast<Il2CppSystem.Collections.IEnumerator>();
-
-        while (casted.MoveNext())
-            writer(this, enumerator.Current);
-    }
-
-    // public void WriteCppList<T>(CppCollections.List<T>? list, Action<PacketWriter, T> writer)
-    //     => WriteCppCollection(list?.Count ?? 0, list?.TryCast<CppCollections.IEnumerable<T>>(out var casted) == true
-    //         ? casted : Il2CppSystem.Linq.Enumerable.Empty<T>(), writer);
-
     public void WriteCppSet<T>(CppCollections.HashSet<T>? set, Action<PacketWriter, T> writer)
-        => WriteCppCollection(set?.Count ?? 0, set?.TryCast<CppCollections.IEnumerable<T>>(out var casted) == true
-            ? casted : Il2CppSystem.Linq.Enumerable.Empty<T>(), writer);
+    {
+        if (set == null)
+        {
+            WriteUShort(0);
+            return;
+        }
+
+        WriteUShort((ushort)set.Count);
+
+        foreach (var item in set)
+            writer(this, item);
+    }
 
     public void WriteDictionary<TKey, TValue>(Dictionary<TKey, TValue>? dict, Action<PacketWriter, TKey> keyWriter, Action<PacketWriter, TValue> valueWriter) where TKey : notnull
     {
