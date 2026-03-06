@@ -151,7 +151,7 @@ public sealed class ServerPacketManager
         }
         else
         {
-            SrLogger.LogWarning($"No handler found for packet type: {packetType}");
+            SrLogger.LogError($"No handler found for packet type: {packetType}");
         }
     }
 

@@ -151,7 +151,7 @@ public sealed class ReliabilityManager
 
         if (IsSequenceNewer(sequenceNumber, lastSequence))
         {
-            SrLogger.LogWarning(
+            SrLogger.LogPacketAcknowledge(
                 $"Out-of-order packet dropped: expected seq={expectedSequence}, got seq={sequenceNumber}, type={packetType}",
                 SrLogTarget.Both);
         }
@@ -193,7 +193,7 @@ public sealed class ReliabilityManager
                     // Checks if packet has timed out
                     if (now - packet.FirstSendTime > MaxRetryTime || packet.SendCount >= MaxResendAttempts)
                     {
-                        SrLogger.LogWarning(
+                        SrLogger.LogPacketAcknowledge(
                             $"Packet {packet.PacketId} (type={packet.PacketType}) failed after {packet.SendCount} attempts",
                             SrLogTarget.Both);
                         keysToRemove[removeCount++] = key;
@@ -211,7 +211,7 @@ public sealed class ReliabilityManager
 
                         if (packet.SendCount % 10 == 0)
                         {
-                            SrLogger.LogWarning(
+                            SrLogger.LogPacketAcknowledge(
                                 $"Resending packet {packet.PacketId} (type={packet.PacketType}) attempt #{packet.SendCount}",
                                 SrLogTarget.Both);
                         }

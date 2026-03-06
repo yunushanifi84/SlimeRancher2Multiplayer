@@ -12,6 +12,7 @@ using SR2MP.Packets.Ammo;
 using SR2MP.Packets.Economy;
 using SR2MP.Packets.Internal;
 using SR2MP.Packets.Loading;
+using SR2MP.Packets.TreasurePod;
 using SR2MP.Packets.World;
 using SR2MP.Packets.Utils;
 using SR2MP.Shared.Utils;
@@ -62,6 +63,7 @@ public sealed class ReSyncManager
         SendPediaPacket(endPoint);
         SendMapPacket(endPoint);
         SendAccessDoorsPacket(endPoint);
+        SendTreasurePodsPacket(endPoint);
         SendActorsPacket(endPoint, PlayerIdGenerator.GetPlayerIDNumber(playerId));
         SendPricesPacket(endPoint);
 
@@ -202,14 +204,14 @@ public sealed class ReSyncManager
 
     private static void SendAccessDoorsPacket(IPEndPoint client)
     {
-        var doorsList = new List<InitialAccessDoorsPacket.Door>();
+        var accessDoorsList = new List<InitialAccessDoorsPacket.Door>();
 
         foreach (var door in GameState.doors)
         {
-            doorsList.Add(new InitialAccessDoorsPacket.Door { ID = door.Key, State = door.Value.state });
+            accessDoorsList.Add(new InitialAccessDoorsPacket.Door { ID = door.Key, State = door.Value.state });
         }
 
-        var accessDoorsPacket = new InitialAccessDoorsPacket { Doors = doorsList };
+        var accessDoorsPacket = new InitialAccessDoorsPacket { Doors = accessDoorsList };
 
         Main.Server.SendToClient(accessDoorsPacket, client);
     }
@@ -402,5 +404,19 @@ public sealed class ReSyncManager
         var pricesPacket = new MarketPricePacket { Prices = MarketPricesArray! };
 
         Main.Server.SendToClient(pricesPacket, client);
+    }
+    
+    private static void SendTreasurePodsPacket(IPEndPoint client)
+    {
+        var treasurePods = new Dictionary<int, TreasurePod.State>();
+
+        foreach (var treasurePod in GameState.pods)
+        {
+            var podId = int.Parse(treasurePod.key.Replace("pod", ""));
+            treasurePods.Add(podId, treasurePod.value.state);
+        }
+    
+        var packet = new InitialTreasurePodsPacket() { TreasurePods = treasurePods };
+        Main.Server.SendToClient(packet, client);
     }
 }

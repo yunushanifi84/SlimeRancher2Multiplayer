@@ -61,6 +61,13 @@ public sealed class SR2MPClient
             return;
         }
 
+        if (serverIp == "127.0.0.1" && !devMode)
+        {
+            SrLogger.LogWarning("You can not connect to this IP!", SrLogTarget.Both);
+            SrLogger.LogWarning("If you want to connect to someone on your local network, use their local IP!");
+            SrLogger.LogWarning("To get the local IP, check your routers Website or use the 'ìpconfig' command prompt command!");
+        }
+
         try
         {
             var parsedIp = IPAddress.Parse(serverIp);

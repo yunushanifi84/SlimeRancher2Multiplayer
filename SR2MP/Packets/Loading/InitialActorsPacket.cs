@@ -12,7 +12,7 @@ public sealed partial class InitialActorsPacket : IPacket
 
         actor.Deserialise(reader);
 
-        SrLogger.LogMessage($"{actorTypeEnum} Actor: {actor.ActorId}");
+        SrLogger.LogPacketSize($"{actorTypeEnum} Actor: {actor.ActorId}");
 
         return actor;
     };

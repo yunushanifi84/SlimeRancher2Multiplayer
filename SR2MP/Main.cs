@@ -30,6 +30,7 @@ public sealed class Main : SR2EExpansionV3
     public static string SavedHostPort => preferences.GetEntry<string>("host_port").Value;
     internal static bool SetupUI => preferences.GetEntry<bool>("internal_setup_ui").Value;
     public static bool PacketSizeLogging => preferences.GetEntry<bool>("packet_size_log").Value;
+    public static bool PacketAcknowledgeLogging => preferences.GetEntry<bool>("packet_ack_log").Value;
     public static bool AllowCheats => preferences.GetEntry<bool>("allow_cheats").Value;
 
     // Made this because of a bug in the server handler of ActorSpawnPacket where TrySpawnNetworkActor
@@ -45,10 +46,11 @@ public sealed class Main : SR2EExpansionV3
         preferences.CreateEntry("allow_cheats", false, is_hidden: true);
 
         preferences.CreateEntry("recent_port", string.Empty, is_hidden: true);
-        preferences.CreateEntry("recent_ip", "127.0.0.1", is_hidden: true);
+        preferences.CreateEntry("recent_ip", "", is_hidden: true);
         preferences.CreateEntry("host_port", "1919", is_hidden: true);
 
         preferences.CreateEntry("packet_size_log", false, display_name: "Packet Size Logging");
+        preferences.CreateEntry("packet_ack_log", true, display_name: "Packet Acknowledge Logging");
 
         preferences.CreateEntry("internal_setup_ui", true, is_hidden: true);
 

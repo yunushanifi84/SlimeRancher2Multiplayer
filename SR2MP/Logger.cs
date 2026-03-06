@@ -59,6 +59,12 @@ public static class Logger
         if (Main.PacketSizeLogging)
             LogInternal(message, LogLevel.Message, target, null, _melonLogger.Msg);
     }
+    
+    public static void LogPacketAcknowledge(object? message, LogTarget target = LogTarget.Main)
+    {
+        if (Main.PacketAcknowledgeLogging)
+            LogInternal(message, LogLevel.Warning, target, null, _melonLogger.Msg);
+    }
 
     private static void LogInternal(object? message, LogLevel level, LogTarget target, Action<string>? sr2EAction, Action<string>? melonAction)
     {
