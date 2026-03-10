@@ -416,3 +416,4 @@ NewSR2MP/Networking/Patches/SteamContextPatch.cs
 !SR2MP/DiscordRPC.dll
 ExternalAnnotations/
 .vscode/
+cspell.json
