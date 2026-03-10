@@ -56,7 +56,7 @@ public static class PacketChunkManager
             packet.Initialize(totalChunks, reliability, sequenceNumber);
             return packet;
         }
-        
+
         public static void Return(IncompletePacket packet) => RecyclePool<IncompletePacket>.Return(packet);
     }
 
@@ -65,7 +65,7 @@ public static class PacketChunkManager
     private static int nextPacketId = 1;
 
     private const int MaxChunkBytes = 500;
-    private const int CompressionThreshold = 30;
+    private const int CompressionThreshold = 64;
     private static readonly TimeSpan PacketTimeout = TimeSpan.FromSeconds(30);
 
     private static int packetCounter;
@@ -73,10 +73,10 @@ public static class PacketChunkManager
 
     private const byte All8Bits = byte.MaxValue;
 
-    internal static bool TryMergePacket(PacketType packetType, byte[] data, int chunkLength, ushort chunkIndex,
-        ushort totalChunks, ushort packetId, IPEndPoint senderEp, PacketReliability reliability,
-        ushort sequenceNumber, out PacketReader reader, out PacketReliability outReliability,
-        out ushort outSequenceNumber)
+    internal static bool TryMergePacket(PacketType packetType, byte[] data,
+        int chunkLength, ushort chunkIndex, ushort totalChunks, ushort packetId,
+        IPEndPoint senderEp, PacketReliability reliability, ushort sequenceNumber,
+        out PacketReader reader, out PacketReliability outReliability, out ushort outSequenceNumber)
     {
         reader = null!;
         outReliability = reliability;
@@ -144,23 +144,23 @@ public static class PacketChunkManager
         // Decompress if compressed
         if (totalSize > 0 && assemblyBuffer[0] == (byte)PacketType.ReservedCompression)
         {
-            var decompWriter = PacketBufferPool.GetWriter(totalSize);
+            var decompWriter = PacketWriter.Borrow(totalSize);
 
             try
             {
                 Decompress(assemblyBuffer, totalSize, decompWriter);
                 var finalBuffer = decompWriter.DetachBuffer(out var finalSize);
-                reader = PacketBufferPool.GetReader(finalBuffer, finalSize, true);
+                reader = PacketReader.Borrow(finalBuffer, finalSize, true);
             }
             finally
             {
-                PacketBufferPool.Return(decompWriter);
+                PacketWriter.Return(decompWriter);
                 ArrayPool<byte>.Shared.Return(assemblyBuffer);
             }
         }
         else
         {
-            reader = PacketBufferPool.GetReader(assemblyBuffer, totalSize, true);
+            reader = PacketReader.Borrow(assemblyBuffer, totalSize, true);
         }
 
         IncompletePacket.Return(packet);
@@ -191,7 +191,7 @@ public static class PacketChunkManager
             // Compress if threshold is reached
             if (data.Length > CompressionThreshold)
             {
-                compressionWriter = PacketBufferPool.GetWriter(data.Length);
+                compressionWriter = PacketWriter.Borrow(data.Length);
                 Compress(data, compressionWriter);
 
                 if (compressionWriter.Position < data.Length * 0.9f)
@@ -241,7 +241,7 @@ public static class PacketChunkManager
         finally
         {
             if (compressionWriter != null)
-                PacketBufferPool.Return(compressionWriter);
+                PacketWriter.Return(compressionWriter);
         }
     }
 
@@ -323,7 +323,7 @@ public static class PacketChunkManager
 
     private static void Decompress(byte[] data, int dataSize, PacketWriter targetWriter)
     {
-        var reader = PacketBufferPool.GetReader(data, dataSize);
+        var reader = PacketReader.Borrow(data, dataSize);
         reader.MoveForward(1); // Skip the ReservedCompression flag
 
         try
@@ -357,13 +357,13 @@ public static class PacketChunkManager
         }
         finally
         {
-            PacketBufferPool.Return(reader);
+            PacketReader.Return(reader);
         }
     }
 
     internal static PacketReader DecompressSingleChunk(byte[] data, int offset, int length)
     {
-        var tempReader = PacketBufferPool.GetReader(data, offset + length);
+        var tempReader = PacketReader.Borrow(data, offset + length);
         tempReader.MoveForward(offset + 1); // Skip to right after the ReservedCompression flag
 
         try
@@ -388,7 +388,7 @@ public static class PacketChunkManager
 
                 outputPoolBuffer[0] = originalType;
 
-                return PacketBufferPool.GetReader(outputPoolBuffer, actualDecompressed + 1, true);
+                return PacketReader.Borrow(outputPoolBuffer, actualDecompressed + 1, true);
             }
             finally
             {
@@ -397,7 +397,7 @@ public static class PacketChunkManager
         }
         finally
         {
-            PacketBufferPool.Return(tempReader);
+            PacketReader.Return(tempReader);
         }
     }
 }

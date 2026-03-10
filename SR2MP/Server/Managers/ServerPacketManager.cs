@@ -85,7 +85,7 @@ public sealed class ServerPacketManager
             {
                 var singleChunkData = ArrayPool<byte>.Shared.Rent(trueChunkLength);
                 data.AsSpan(10, trueChunkLength).CopyTo(singleChunkData);
-                reader = PacketBufferPool.GetReader(singleChunkData, trueChunkLength, true);
+                reader = PacketReader.Borrow(singleChunkData, trueChunkLength, true);
             }
         }
         else
@@ -98,7 +98,7 @@ public sealed class ServerPacketManager
                 packetId, clientEp, reliability, sequenceNumber,
                 out reader, out packetReliability, out packetSequenceNumber))
             {
-                PacketBufferPool.Return(reader);
+                PacketReader.Return(reader);
                 return;
             }
         }
@@ -113,7 +113,7 @@ public sealed class ServerPacketManager
             }
             finally
             {
-                PacketBufferPool.Return(reader);
+                PacketReader.Return(reader);
             }
 
             return;
@@ -132,7 +132,7 @@ public sealed class ServerPacketManager
 
         if (PacketDeduplication.IsDuplicate(packetKey))
         {
-            PacketBufferPool.Return(reader);
+            PacketReader.Return(reader);
             SrLogger.LogPacketSize($"Duplicate packet ignored from {clientEp}: {packetType} (packetId={packetId})", SrLogTarget.Both);
             return;
         }
@@ -141,7 +141,7 @@ public sealed class ServerPacketManager
         if (packetReliability == PacketReliability.ReliableOrdered &&
             !networkManager.ShouldProcessOrderedPacket(clientEp, packetSequenceNumber, packetTypeHeader))
         {
-            PacketBufferPool.Return(reader);
+            PacketReader.Return(reader);
             return;
         }
 
@@ -166,7 +166,7 @@ public sealed class ServerPacketManager
             OriginalPacketType = packetType
         };
 
-        var writer = PacketBufferPool.GetWriter();
+        var writer = PacketWriter.Borrow();
         try
         {
             writer.WritePacket(ackPacket);
@@ -176,7 +176,7 @@ public sealed class ServerPacketManager
         }
         finally
         {
-            PacketBufferPool.Return(writer);
+            PacketWriter.Return(writer);
         }
     }
 }

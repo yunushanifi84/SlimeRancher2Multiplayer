@@ -58,7 +58,7 @@ public sealed class SR2MPServer
         try
         {
             PlayerId = devMode ? "PLAYER_TEST_MODE" : PlayerIdGenerator.GeneratePersistentPlayerId();
-            
+
             packetManager.RegisterHandlers();
             Application.quitting += new Action(Close);
             networkManager.Start(port, enableIPv6);
@@ -180,7 +180,7 @@ public sealed class SR2MPServer
 
     public void SendToClient<T>(T packet, IPEndPoint endPoint) where T : IPacket
     {
-        var writer = PacketBufferPool.GetWriter();
+        var writer = PacketWriter.Borrow();
 
         try
         {
@@ -189,7 +189,7 @@ public sealed class SR2MPServer
         }
         finally
         {
-            PacketBufferPool.Return(writer);
+            PacketWriter.Return(writer);
         }
     }
 
@@ -200,7 +200,7 @@ public sealed class SR2MPServer
 
     public void SendToAll<T>(T packet) where T : IPacket
     {
-        var writer = PacketBufferPool.GetWriter();
+        var writer = PacketWriter.Borrow();
 
         try
         {
@@ -210,13 +210,13 @@ public sealed class SR2MPServer
         }
         finally
         {
-            PacketBufferPool.Return(writer);
+            PacketWriter.Return(writer);
         }
     }
 
     public void SendToAllExcept<T>(T packet, string excludedClientInfo) where T : IPacket
     {
-        var writer = PacketBufferPool.GetWriter();
+        var writer = PacketWriter.Borrow();
 
         try
         {
@@ -231,7 +231,7 @@ public sealed class SR2MPServer
         }
         finally
         {
-            PacketBufferPool.Return(writer);
+            PacketWriter.Return(writer);
         }
     }
 

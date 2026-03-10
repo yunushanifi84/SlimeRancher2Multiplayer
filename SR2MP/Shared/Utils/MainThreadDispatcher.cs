@@ -11,7 +11,7 @@ public sealed class MainThreadDispatcher : MonoBehaviour
 
     // ReSharper disable once InconsistentNaming
     private static readonly ConcurrentQueue<ClientHandleCache> clientPacketQueue = new();
-    
+
     // ReSharper disable once InconsistentNaming
     private static readonly ConcurrentQueue<ServerHandleCache> serverPacketQueue = new();
 
@@ -43,7 +43,7 @@ public sealed class MainThreadDispatcher : MonoBehaviour
             }
             finally
             {
-                PacketBufferPool.Return(clientCache.Reader);
+                PacketReader.Return(clientCache.Reader);
             }
         }
 
@@ -60,7 +60,7 @@ public sealed class MainThreadDispatcher : MonoBehaviour
             }
             finally
             {
-                PacketBufferPool.Return(serverCache.Reader);
+                PacketReader.Return(serverCache.Reader);
             }
         }
     }

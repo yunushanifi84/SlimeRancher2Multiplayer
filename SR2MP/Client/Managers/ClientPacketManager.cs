@@ -83,7 +83,7 @@ public sealed class ClientPacketManager
             {
                 var singleChunkData = ArrayPool<byte>.Shared.Rent(trueChunkLength);
                 data.AsSpan(10, trueChunkLength).CopyTo(singleChunkData);
-                reader = PacketBufferPool.GetReader(singleChunkData, trueChunkLength, true);
+                reader = PacketReader.Borrow(singleChunkData, trueChunkLength, true);
             }
         }
         else
@@ -96,7 +96,7 @@ public sealed class ClientPacketManager
                 packetId, serverEp, reliability, sequenceNumber,
                 out reader, out packetReliability, out packetSequenceNumber))
             {
-                PacketBufferPool.Return(reader);
+                PacketReader.Return(reader);
                 return;
             }
         }
@@ -111,7 +111,7 @@ public sealed class ClientPacketManager
             }
             finally
             {
-                PacketBufferPool.Return(reader);
+                PacketReader.Return(reader);
             }
 
             return;
@@ -128,7 +128,7 @@ public sealed class ClientPacketManager
 
         if (PacketDeduplication.IsDuplicate(packetKey))
         {
-            PacketBufferPool.Return(reader);
+            PacketReader.Return(reader);
             SrLogger.LogPacketSize($"Duplicate packet ignored: {packetType} (packetId={packetId})", SrLogTarget.Both);
             return;
         }
@@ -136,7 +136,7 @@ public sealed class ClientPacketManager
         if (packetReliability == PacketReliability.ReliableOrdered &&
             !client.ShouldProcessOrderedPacket(serverEp, packetSequenceNumber, packetTypeHeader))
         {
-            PacketBufferPool.Return(reader);
+            PacketReader.Return(reader);
             return;
         }
 

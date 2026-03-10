@@ -64,11 +64,12 @@ public enum PacketType : byte
     SiloSlotSelect = 58,          // Both Ways                                    Medium (manual)                       On Silo Slot Switch
     AutoFeederSpeed = 59,         // Both Ways                                    Low (manual)                          On Auto Feeder speed switch
     AutoFeederDispense = 60,      // Both Ways                                    Medium                                On Auto Feeder food dispense
-    PlortCollection = 61,         // Both Ways                                    Medium (can be manual)                On Auto Feeder food dispense    
-    ModSyncAck = 62,              // Client -> Server                             Low (manual)                          Mod names on incompatiable mod
-    ModSync = 63,                 // Server -> Client                             Low (manual)                          Sync Mod names on incompatiable mod
+    PlortCollection = 61,         // Both Ways                                    Medium (can be manual)                On Auto Feeder food dispense
+    ModSyncAck = 62,              // Client -> Server                             Low (manual)                          Mod names on incompatible mod
+    ModSync = 63,                 // Server -> Client                             Low (manual)                          Sync Mod names on incompatible mod
     TreasurePod = 64,             // Both Ways                                    Medium (manual)                       On Treasure Pod open
     InitialTreasurePods = 65,     // Server -> Client                             Low (depends on join)                 Treasure Pods on join
+    ApiCall = 253,                // Variable                                     Variable                              Variable
     ReservedAcknowledge = 254,    // Both Ways                                    Very High                             For acknowledge packets
     ReservedCompression = 255     // Both Ways                                    Very High                             For packet compression
 }

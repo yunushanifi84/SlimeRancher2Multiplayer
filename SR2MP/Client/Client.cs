@@ -245,7 +245,7 @@ public sealed class SR2MPClient
             return;
         }
 
-        var writer = PacketBufferPool.GetWriter();
+        var writer = PacketWriter.Borrow();
 
         try
         {
@@ -281,7 +281,7 @@ public sealed class SR2MPClient
         }
         finally
         {
-            PacketBufferPool.Return(writer);
+            PacketWriter.Return(writer);
         }
     }
 
