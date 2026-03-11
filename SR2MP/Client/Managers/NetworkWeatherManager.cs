@@ -39,20 +39,21 @@ public static class NetworkWeatherManager
 
     private static LightningStrike lightning;
     private static WeatherDirector director;
-    public static Dictionary<int, WeatherStateDefinition> weatherStates = new();
+
+    public static readonly Dictionary<int, WeatherStateDefinition> WeatherStates = new();
 
     internal static void Initialize()
     {
         var refer = GameContext.Instance.AutoSaveDirector._saveReferenceTranslation;
         foreach (var state in refer._weatherStateTranslation.RawLookupDictionary)
         {
-            weatherStates.Add(refer.GetPersistenceId(state.value), state.value.TryCast<WeatherStateDefinition>()!);
+            WeatherStates.Add(refer.GetPersistenceId(state.value), state.value.TryCast<WeatherStateDefinition>()!);
         }
     }
 
     public static void CheckInitialized()
     {
-        if (weatherStates.Count == 0)
+        if (WeatherStates.Count == 0)
             Initialize();
     }
 

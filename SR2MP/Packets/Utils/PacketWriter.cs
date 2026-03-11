@@ -76,7 +76,6 @@ public sealed class PacketWriter : PacketBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteDouble(double value) => BinaryPrimitives.WriteDoubleLittleEndian(WriteAlloc(8), value);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void WriteFloats(ReadOnlySpan<float> values)
     {
         var span = WriteAlloc(values.Length * 4);
@@ -163,12 +162,15 @@ public sealed class PacketWriter : PacketBuffer
             writer(this, item);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteArray<T>(T[]? array, Action<PacketWriter, T> writer)
         => WriteCollection(array?.Length ?? 0, array ?? Enumerable.Empty<T>(), writer);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteList<T>(List<T>? list, Action<PacketWriter, T> writer)
         => WriteCollection(list?.Count ?? 0, list ?? Enumerable.Empty<T>(), writer);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteSet<T>(HashSet<T>? set, Action<PacketWriter, T> writer)
         => WriteCollection(set?.Count ?? 0, set ?? Enumerable.Empty<T>(), writer);
 
@@ -211,6 +213,7 @@ public sealed class PacketWriter : PacketBuffer
             EnsureCapacity(0);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override void EndPackingBools() => EnsureCapacity(0);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -298,6 +301,7 @@ public sealed class PacketWriter : PacketBuffer
             ArrayPool<byte>.Shared.Return(buffer);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected override void EnsureBounds(int count) => EnsureCapacity(count);
 
     public void Reset(int initialCapacity = 256)
@@ -341,6 +345,7 @@ public sealed class PacketWriter : PacketBuffer
         return writer;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Return(PacketWriter writer) => RecyclePool<PacketWriter>.Return(writer);
 
     private void WriteVarInt(ulong value, int maxSize)

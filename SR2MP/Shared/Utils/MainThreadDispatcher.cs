@@ -10,14 +10,14 @@ public sealed class MainThreadDispatcher : MonoBehaviour
     public static MainThreadDispatcher Instance { get; private set; }
 
     // ReSharper disable once InconsistentNaming
-    private static readonly ConcurrentQueue<ClientHandleCache> clientPacketQueue = new();
+    private readonly ConcurrentQueue<ClientHandleCache> clientPacketQueue = new();
 
     // ReSharper disable once InconsistentNaming
-    private static readonly ConcurrentQueue<ServerHandleCache> serverPacketQueue = new();
+    private readonly ConcurrentQueue<ServerHandleCache> serverPacketQueue = new();
 
     public static void Initialize()
     {
-        if (Instance != null) return;
+        if (Instance) return;
 
         var obj = new GameObject("SR2MP_MainThreadDispatcher");
         Instance = obj.AddComponent<MainThreadDispatcher>();
@@ -65,9 +65,9 @@ public sealed class MainThreadDispatcher : MonoBehaviour
         }
     }
 
-    public static void Enqueue(in ClientHandleCache cache) => clientPacketQueue.Enqueue(cache);
+    public void Enqueue(in ClientHandleCache cache) => clientPacketQueue.Enqueue(cache);
 
-    public static void Enqueue(in ServerHandleCache cache) => serverPacketQueue.Enqueue(cache);
+    public void Enqueue(in ServerHandleCache cache) => serverPacketQueue.Enqueue(cache);
 
 #pragma warning disable CA1822 // Mark members as static
     public void OnDestroy() => Instance = null!;

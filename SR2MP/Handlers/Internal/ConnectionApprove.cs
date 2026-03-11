@@ -23,22 +23,22 @@ public sealed class ConnectionApproveHandler : BasePacketHandler<ConnectionAppro
             };
 
             PacketSender.SendPacket(joinPacket);
-            
-            SR2MPClient.StartHeartbeat();
+
+            // SR2MPClient.StartHeartbeat();
             Main.Client.NotifyConnected();
 
             SrLogger.LogMessage($"Connection acknowledged by server! (PlayerId: {packet.PlayerId})", SrLogTarget.Both);
 
             cheatsEnabled = packet.AllowCheats;
-            
+
             // todo: resync players too
             foreach (var (id, username) in packet.OtherPlayers)
                 SpawnPlayer(id, username);
         }
-        
+
         SceneContext.Instance.PlayerState._model.SetCurrency(GameContext.Instance.LookupDirector._currencyList[0].Cast<ICurrency>(), packet.Money);
         SceneContext.Instance.PlayerState._model.SetCurrency(GameContext.Instance.LookupDirector._currencyList[1].Cast<ICurrency>(), packet.RainbowMoney);
-        
+
         return false;
     }
 

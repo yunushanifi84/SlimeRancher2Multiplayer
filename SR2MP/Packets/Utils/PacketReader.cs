@@ -90,16 +90,14 @@ public sealed class PacketReader : PacketBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ulong ReadPackedULong() => ReadVarInt(70);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ReadFloats(Span<float> values)
     {
         var span = ReadRequest(values.Length * 4);
 
-        for (var i = 0; i < values.Length; i++)
-            values[i] = BinaryPrimitives.ReadSingleLittleEndian(span[(i * 4)..]);
+        for (var i = 0; i < span.Length; i += 4)
+            values[i] = BinaryPrimitives.ReadSingleLittleEndian(span[i..]);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Vector2 ReadVector2()
     {
         Span<float> v = stackalloc float[2];
@@ -107,7 +105,6 @@ public sealed class PacketReader : PacketBuffer
         return new(v[0], v[1]);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Vector3 ReadVector3()
     {
         Span<float> v = stackalloc float[3];
@@ -115,7 +112,6 @@ public sealed class PacketReader : PacketBuffer
         return new(v[0], v[1], v[2]);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Quaternion ReadQuaternion()
     {
         Span<float> v = stackalloc float[4];
@@ -123,7 +119,6 @@ public sealed class PacketReader : PacketBuffer
         return new(v[0], v[1], v[2], v[3]);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public float4 ReadFloat4()
     {
         Span<float> v = stackalloc float[4];
@@ -175,12 +170,15 @@ public sealed class PacketReader : PacketBuffer
         return array;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public List<T> ReadList<T>(Func<PacketReader, T> reader)
         => ReadCollection(PacketReaderDels.ListFactory<T>.Func, PacketReaderDels.ListAdd<T>.Func, reader);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public HashSet<T> ReadSet<T>(Func<PacketReader, T> reader)
         => ReadCollection(PacketReaderDels.HashSetFactory<T>.Func, PacketReaderDels.HashSetAdd<T>.Func, reader);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public CppCollections.HashSet<T> ReadCppSet<T>(Func<PacketReader, T> reader)
         => ReadCollection(PacketReaderDels.CppHashSetFactory<T>.Func, PacketReaderDels.CppHashSetAdd<T>.Func, reader);
 
@@ -207,7 +205,7 @@ public sealed class PacketReader : PacketBuffer
     public T ReadPacket<T>() where T : IPacket, new()
     {
         EnsureReadable(1);
-        position++;
+        position++; // The byte header is already read, so we skip this byte
         return ReadNetObject<T>();
     }
 
@@ -224,6 +222,7 @@ public sealed class PacketReader : PacketBuffer
         return value;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override void EndPackingBools() => currentBitIndex = 8;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -243,6 +242,7 @@ public sealed class PacketReader : PacketBuffer
         position += destination.Length;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected override void EnsureBounds(int count) => EnsureReadable(count);
 
     public override void MoveForward(int count)
@@ -266,7 +266,6 @@ public sealed class PacketReader : PacketBuffer
         position -= count;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ReadOnlySpan<byte> ReadRequest(int size)
     {
         EnsureReadable(size);
@@ -296,6 +295,7 @@ public sealed class PacketReader : PacketBuffer
         return reader;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Return(PacketReader reader) => RecyclePool<PacketReader>.Return(reader);
 
     private ulong ReadVarInt(int maxShift)

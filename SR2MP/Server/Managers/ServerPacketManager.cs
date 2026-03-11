@@ -6,6 +6,7 @@ using SR2MP.Shared.Managers;
 using SR2MP.Shared.Utils;
 using System.Buffers;
 using SR2MP.Shared;
+using HarmonyLib;
 
 namespace SR2MP.Server.Managers;
 
@@ -21,11 +22,10 @@ public sealed class ServerPacketManager
         this.clientManager = clientManager;
     }
 
-    public void RegisterHandlers()
+    public void RegisterHandlers(Assembly assembly)
     {
-        var handlerTypes = Main.Core.GetTypes()
+        var handlerTypes = AccessTools.GetTypesFromAssembly(assembly)
             .Where(type => type.GetCustomAttribute<PacketHandlerAttribute>() != null
-                        && typeof(IServerPacketHandler).IsAssignableFrom(type)
                         && !type.IsAbstract);
 
         foreach (var type in handlerTypes)
@@ -147,7 +147,7 @@ public sealed class ServerPacketManager
 
         if (handlers.TryGetValue(packetTypeHeader, out var handler))
         {
-            MainThreadDispatcher.Enqueue(new ServerHandleCache(reader, handler, clientEp));
+            MainThreadDispatcher.Instance.Enqueue(new ServerHandleCache(reader, handler, clientEp));
         }
         else
         {

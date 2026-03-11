@@ -2,24 +2,25 @@ namespace SR2MP.Client.Models;
 
 public sealed class RemotePlayer
 {
-    public string PlayerId { get; }
-    public string Username { get; set; }
+    public readonly string PlayerId;
 
-    public Vector3 Position { get; set; }
-    public float Rotation { get; set; }
+    public string Username { get; internal set; }
+
+    public Vector3 Position { get; internal set; }
+    public float Rotation { get; internal set; }
 
     // Animation stuff
-    public int AirborneState { get; set; }
-    public bool Moving { get; set; }
-    public float Yaw { get; set; }
-    public float HorizontalMovement { get; set; }
-    public float ForwardMovement { get; set; }
-    public float HorizontalSpeed { get; set; }
-    public float ForwardSpeed { get; set; }
-    public bool Sprinting { get; set; }
+    public int AirborneState { get; internal set; }
+    public bool Moving { get; internal set; }
+    public float Yaw { get; internal set; }
+    public float HorizontalMovement { get; internal set; }
+    public float ForwardMovement { get; internal set; }
+    public float HorizontalSpeed { get; internal set; }
+    public float ForwardSpeed { get; internal set; }
+    public bool Sprinting { get; internal set; }
 
-    public float LookY { get; set; }
-    public float LastLookY { get; set; }
+    public float LookY { get; internal set; }
+    public float LastLookY { get; internal set; }
 
     public RemotePlayer(string playerId) => PlayerId = playerId;
 }

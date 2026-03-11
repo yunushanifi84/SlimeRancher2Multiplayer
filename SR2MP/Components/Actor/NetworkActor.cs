@@ -14,9 +14,10 @@ using Type = Il2CppSystem.Type;
 namespace SR2MP.Components.Actor;
 
 [RegisterTypeInIl2Cpp(false)]
-public sealed class NetworkActor : MonoBehaviour
+internal sealed class NetworkActor : MonoBehaviour
 {
-    internal RegionMember? regionMember;
+    public RegionMember? regionMember;
+
     private Identifiable identifiable;
     private ResourceCycle? cycle;
     private Rigidbody rigidbody;
@@ -24,16 +25,18 @@ public sealed class NetworkActor : MonoBehaviour
     private PlortModel plortModel;
 
     public float syncTimer = Timers.ActorTimer;
-    private bool? CycleReleasing => cycle?._preparingToRelease;
-    private bool? cachedCycleReleasing;
     public bool shouldUpdateResourceState;
-    private ResourceCycle.State? prevResourceState;
     public bool isValid = true;
     public bool isDestroyed;
     public byte attemptedGetIdentifiable;
     public bool cachedLocallyOwned;
 
-    private Vector3 SavedVelocity { get; set; }
+    private bool? CycleReleasing => cycle?._preparingToRelease;
+    private bool? cachedCycleReleasing;
+    private ResourceCycle.State? prevResourceState;
+
+    private Vector3 savedVelocity;
+
     public Vector3 previousPosition;
     public Vector3 nextPosition;
     public Quaternion previousRotation;
@@ -173,19 +176,16 @@ public sealed class NetworkActor : MonoBehaviour
         try
         {
             var actorId = ActorId;
+
             if (actorId.Value == 0)
                 yield break;
 
+            LocallyOwned = !hibernating;
+
             if (hibernating)
-            {
-                LocallyOwned = false;
                 Main.SendToAllOrServer(new ActorUnloadPacket { ActorId = actorId });
-            }
             else
-            {
-                LocallyOwned = true;
                 Main.SendToAllOrServer(new ActorTransferPacket { ActorId = actorId, OwnerId = LocalID });
-            }
         }
         catch (Exception ex)
         {
@@ -196,16 +196,16 @@ public sealed class NetworkActor : MonoBehaviour
 
     public void HibernationChanged(bool value)
     {
-        if (isValid && !isDestroyed)
+        if (!isValid || isDestroyed)
+            return;
+
+        try
         {
-            try
-            {
-                MelonCoroutines.Start(WaitOneFrameOnHibernationChange(value));
-            }
-            catch (Exception ex)
-            {
-                SrLogger.LogError($"HibernationChanged error: {ex}", SrLogTarget.Both);
-            }
+            MelonCoroutines.Start(WaitOneFrameOnHibernationChange(value));
+        }
+        catch (Exception ex)
+        {
+            SrLogger.LogError($"HibernationChanged error: {ex}", SrLogTarget.Both);
         }
     }
 
@@ -218,7 +218,7 @@ public sealed class NetworkActor : MonoBehaviour
         previousRotation = transform.rotation;
         nextPosition = packet.Position;
         nextRotation = packet.Rotation;
-        SavedVelocity = packet.Velocity;
+        savedVelocity = packet.Velocity;
         interpolationStart = UnityEngine.Time.unscaledTime;
         interpolationEnd = interpolationStart + Timers.ActorTimer;
     }
@@ -235,7 +235,7 @@ public sealed class NetworkActor : MonoBehaviour
         transform.rotation = Quaternion.Lerp(previousRotation, nextRotation, timer);
 
         if (rigidbody)
-            rigidbody.velocity = SavedVelocity;
+            rigidbody.velocity = savedVelocity;
     }
 
     private void Update()
@@ -287,8 +287,9 @@ public sealed class NetworkActor : MonoBehaviour
             return;
 
         SetRigidbodyState(LocallyOwned);
+
         if (LocallyOwned && rigidbody)
-            rigidbody.velocity = SavedVelocity;
+            rigidbody.velocity = savedVelocity;
 
         cachedLocallyOwned = LocallyOwned;
     }
@@ -299,10 +300,12 @@ public sealed class NetworkActor : MonoBehaviour
             return;
 
         cachedCycleReleasing = CycleReleasing;
+
         if (CycleReleasing != true)
             return;
 
         var actorId = ActorId;
+
         if (actorId.Value != 0)
             Main.SendToAllOrServer(new ActorTransferPacket { ActorId = actorId, OwnerId = LocalID });
     }
@@ -316,6 +319,7 @@ public sealed class NetworkActor : MonoBehaviour
         nextRotation = transform.rotation;
 
         var actorId = ActorId;
+
         if (actorId.Value == 0)
             return;
 
@@ -341,6 +345,7 @@ public sealed class NetworkActor : MonoBehaviour
         else if (isResource)
         {
             packet.UpdateType = ActorUpdateType.Resource;
+
             if (cycle?._model != null)
             {
                 packet.ResourceProgress = cycle._model.progressTime;

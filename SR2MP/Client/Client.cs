@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using SR2MP.Client.Managers;
 using SR2MP.Client.Models;
 using SR2MP.Components.UI;
+using SR2MP.Packets;
 using SR2MP.Packets.Loading;
 using SR2MP.Packets.Player;
 using SR2MP.Packets.Utils;
@@ -17,7 +18,7 @@ public sealed class SR2MPClient
     private UdpClient? udpClient;
     private IPEndPoint? serverEndPoint;
     private Thread? receiveThread;
-    private Timer? heartbeatTimer;
+    // private Timer? heartbeatTimer;
     private ReliabilityManager? reliabilityManager;
 
     private volatile bool isConnected;
@@ -38,7 +39,7 @@ public sealed class SR2MPClient
     public event Action<string>? OnPlayerLeft;
     public event Action<string, RemotePlayer>? OnPlayerUpdate;
 
-    public SR2MPClient()
+    internal SR2MPClient()
     {
         packetManager = new ClientPacketManager(this);
 
@@ -47,7 +48,7 @@ public sealed class SR2MPClient
         playerManager.OnPlayerUpdated += (playerId, player) => OnPlayerUpdate?.Invoke(playerId, player);
     }
 
-    public void Connect(string serverIp, int port)
+    internal void Connect(string serverIp, int port)
     {
         if (Main.Server.IsRunning())
         {
@@ -79,6 +80,7 @@ public sealed class SR2MPClient
                     SrLogger.LogError("IPv6 is not supported on this machine! Please enable IPv6 or use an IPv4 address.", SrLogTarget.Both);
                     throw new NotSupportedException("IPv6 is not available on this system");
                 }
+
                 udpClient = new UdpClient(AddressFamily.InterNetworkV6);
                 SrLogger.LogMessage("Using IPv6 connection", SrLogTarget.Both);
             }
@@ -102,7 +104,7 @@ public sealed class SR2MPClient
             reliabilityManager = new ReliabilityManager(SendRaw);
             reliabilityManager.Start();
 
-            packetManager.RegisterHandlers();
+            packetManager.RegisterHandlers(Main.Core);
 
             isConnected = true;
             connectionAcknowledged = false;
@@ -142,11 +144,12 @@ public sealed class SR2MPClient
     {
         if (connectionAcknowledged || !isConnected)
             return;
+
         SrLogger.LogError("Connection timeout: Server did not respond within 10 seconds", SrLogTarget.Both);
         Disconnect();
     }
 
-    public void UpdateConnectionStatus(bool state)
+    internal void UpdateConnectionStatus(bool state)
     {
         isConnected = state;
     }
@@ -216,13 +219,13 @@ public sealed class SR2MPClient
         }
 
         SrLogger.LogMessage("Client ReceiveLoop ended!", SrLogTarget.Both);
-        }
-
-    internal static void StartHeartbeat()
-    {
-        // Removed this temporarily because there are no Handlers
-        // heartbeatTimer = new Timer(SendHeartbeat, null, TimeSpan.FromSeconds(215), TimeSpan.FromSeconds(215));
     }
+
+    // internal static void StartHeartbeat()
+    // {
+    //     // Removed this temporarily because there are no Handlers
+    //     heartbeatTimer = new Timer(SendHeartbeat, null, TimeSpan.FromSeconds(215), TimeSpan.FromSeconds(215));
+    // }
 
     // private void SendHeartbeat(object? state)
     // {
@@ -285,26 +288,28 @@ public sealed class SR2MPClient
         }
     }
 
+    public void SendData<T>(T data) where T : IReliabilityNetObject, new() => SendPacket(new ApiPacket<T>() { Data = data });
+
     // Sends raw data without reliability tracking (used for resends)
     private void SendRaw(ArraySegment<byte> data, IPEndPoint endPoint)
     {
-        if (data.Array == null) return;
-        udpClient?.Client.SendTo(data.Array, data.Offset, data.Count, SocketFlags.None, endPoint);
+        if (data.Array != null)
+            udpClient?.Client.SendTo(data.Array, data.Offset, data.Count, SocketFlags.None, endPoint);
     }
 
     // Handle acknowledgement from server, used in client packet manager
-    public void HandleAck(IPEndPoint sender, ushort packetId, byte packetType)
+    internal void HandleAck(IPEndPoint sender, ushort packetId, byte packetType)
     {
         reliabilityManager?.HandleAck(sender, packetId, packetType);
     }
 
     // Check if ordered packet should be processed
-    public bool ShouldProcessOrderedPacket(IPEndPoint sender, ushort sequenceNumber, byte packetType)
+    internal bool ShouldProcessOrderedPacket(IPEndPoint sender, ushort sequenceNumber, byte packetType)
     {
         return reliabilityManager?.ShouldProcessOrderedPacket(sender, sequenceNumber, packetType) ?? true;
     }
 
-    public void Disconnect()
+    internal void Disconnect()
     {
         if (!isConnected)
             return;
@@ -312,6 +317,7 @@ public sealed class SR2MPClient
         try
         {
             MultiplayerUI.Instance.ClearChatMessages();
+
             if (!shownConnectionError)
             {
                 MultiplayerUI.Instance.RegisterSystemMessage("You disconnected from the world!", $"SYSTEM_DISCONNECT_LOCAL_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", MultiplayerUI.SystemMessageDisconnect);
@@ -335,8 +341,8 @@ public sealed class SR2MPClient
 
             isConnected = false;
 
-            heartbeatTimer?.Dispose();
-            heartbeatTimer = null;
+            // heartbeatTimer?.Dispose();
+            // heartbeatTimer = null;
 
             connectionTimeoutTimer?.Dispose();
             connectionTimeoutTimer = null;
@@ -356,6 +362,7 @@ public sealed class SR2MPClient
             foreach (var player in playerManager.GetAllPlayers())
             {
                 var playerId = player.PlayerId;
+
                 if (!playerObjects.TryGetValue(playerId, out var playerObject))
                     continue;
 
@@ -364,6 +371,7 @@ public sealed class SR2MPClient
                     Object.Destroy(playerObject);
                     SrLogger.LogPacketSize($"Destroyed player object for {playerId}", SrLogTarget.Both);
                 }
+
                 playerObjects.Remove(playerId);
             }
 

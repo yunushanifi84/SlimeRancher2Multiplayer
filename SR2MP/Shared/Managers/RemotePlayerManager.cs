@@ -30,6 +30,7 @@ public sealed class RemotePlayerManager
             OnPlayerAdded?.Invoke(playerId);
             return player;
         }
+
         SrLogger.LogWarning($"Remote player already exists: {playerId}", SrLogTarget.Both);
         return players[playerId];
     }

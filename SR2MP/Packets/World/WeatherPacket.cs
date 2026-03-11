@@ -96,7 +96,7 @@ public sealed class WeatherForecast : INetObject
     public void Deserialise(PacketReader reader)
     {
         NetworkWeatherManager.CheckInitialized();
-        State = NetworkWeatherManager.weatherStates[reader.ReadInt()];
+        State = NetworkWeatherManager.WeatherStates[reader.ReadInt()];
         WeatherStarted = reader.ReadBool();
         StartTime = reader.ReadDouble();
         EndTime = reader.ReadDouble();

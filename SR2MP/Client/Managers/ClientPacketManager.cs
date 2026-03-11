@@ -6,6 +6,7 @@ using SR2MP.Shared.Managers;
 using SR2MP.Shared.Utils;
 using System.Buffers;
 using SR2MP.Shared;
+using HarmonyLib;
 
 namespace SR2MP.Client.Managers;
 
@@ -14,16 +15,15 @@ public sealed class ClientPacketManager
     private readonly Dictionary<byte, IClientPacketHandler> handlers = new();
     private readonly SR2MPClient client;
 
-    public ClientPacketManager(SR2MPClient client)
+    internal ClientPacketManager(SR2MPClient client)
     {
         this.client = client;
     }
 
-    public void RegisterHandlers()
+    public void RegisterHandlers(Assembly assembly)
     {
-        var handlerTypes = Main.Core.GetTypes()
+        var handlerTypes = AccessTools.GetTypesFromAssembly(assembly)
             .Where(type => type.GetCustomAttribute<PacketHandlerAttribute>() != null
-                        && typeof(IClientPacketHandler).IsAssignableFrom(type)
                         && !type.IsAbstract);
 
         foreach (var type in handlerTypes)
@@ -49,7 +49,7 @@ public sealed class ClientPacketManager
         SrLogger.LogMessage($"Total client packet handlers registered: {handlers.Count}", SrLogTarget.Both);
     }
 
-    public void HandlePacket(byte[] data, int receivedBytes, IPEndPoint serverEp)
+    internal void HandlePacket(byte[] data, int receivedBytes, IPEndPoint serverEp)
     {
         if (receivedBytes < 10)
         {
@@ -142,7 +142,7 @@ public sealed class ClientPacketManager
 
         if (handlers.TryGetValue(packetTypeHeader, out var handler))
         {
-            MainThreadDispatcher.Enqueue(new ClientHandleCache(reader, handler));
+            MainThreadDispatcher.Instance.Enqueue(new ClientHandleCache(reader, handler));
         }
         else
         {

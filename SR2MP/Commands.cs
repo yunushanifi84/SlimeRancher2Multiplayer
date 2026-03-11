@@ -6,7 +6,7 @@ using SR2MP.Packets;
 
 namespace SR2MP;
 
-public sealed class HostCommand : SR2ECommand
+internal sealed class HostCommand : SR2ECommand
 {
     private static Server.SR2MPServer? server;
 
@@ -23,7 +23,7 @@ public sealed class HostCommand : SR2ECommand
     }
 }
 
-public sealed class ChatCommand : SR2ECommand
+internal sealed class ChatCommand : SR2ECommand
 {
     public override string ID => "chat";
     public override string Usage => "chat <message>";
@@ -122,10 +122,10 @@ public sealed class ResyncAllCommand : SR2ECommand
     {
         if (Main.Client.IsConnected)
             Main.Server.reSyncManager.RequestResync();
-        
+
         if (Main.Server.IsRunning())
             Main.Server.reSyncManager.SynchronizeAll();
-        
+
         SrLogger.LogMessage("Resync command executed!", SrLogTarget.Both);
         return true;
     }
