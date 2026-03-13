@@ -10,7 +10,7 @@ public static class NetworkAmmoManager
         ammoToID.Clear();
         slotToAmmo.Clear();
         slotDefinitions.Clear();
-        
+
         // Right now, I don't know where the definitions are actually stored,
         // but it isn't in the normal places like LookupDirector or SaveReferenceTranslation.
         //
@@ -39,7 +39,6 @@ public static class NetworkAmmoManager
     }
 
     private static readonly Dictionary<ushort, AmmoSlotDefinition> slotDefinitions = new();
-
     private static readonly Dictionary<IntPtr, string> ammoToID = new();
     private static readonly Dictionary<string, AmmoSlotManager> IDToAmmo = new();
     private static readonly Dictionary<IntPtr, (AmmoSlotManager ammo, int index)> slotToAmmo = new();
@@ -51,20 +50,23 @@ public static class NetworkAmmoManager
 
         return null;
     }
+
     public static string? GetPlotID(this AmmoSlot slot)
     {
         if (slotToAmmo.TryGetValue(slot.Pointer, out var ammoTuple))
             return ammoTuple.ammo.GetPlotID();
-        
+
         return null;
     }
+
     public static int? GetNextSlot(this AmmoSlot slot)
     {
         if (slotToAmmo.TryGetValue(slot.Pointer, out var ammoTuple))
             return ammoTuple.index;
-        
+
         return null;
     }
+
     public static AmmoSlotManager? GetAmmo(this AmmoSlot slot)
     {
         if (slotToAmmo.TryGetValue(slot.Pointer, out var ammoTuple))
@@ -72,6 +74,7 @@ public static class NetworkAmmoManager
 
         return null;
     }
+
     public static AmmoSlotManager? GetAmmo(string id)
     {
         if (IDToAmmo.TryGetValue(id, out var ammo))
@@ -87,11 +90,11 @@ public static class NetworkAmmoManager
         slotToAmmo.Clear();
     }
 
-    public static void RegisterAmmoPointer(this AmmoSlotManager ammo, string id)
+    private static void RegisterAmmoPointer(this AmmoSlotManager ammo, string id)
     {
         ammoToID[ammo.Pointer] = id;
         IDToAmmo[id] = ammo;
-        
+
         for (var i = 0; i < ammo.Slots.Count; i++)
         {
             var slot = ammo.Slots[i];
@@ -101,14 +104,21 @@ public static class NetworkAmmoManager
 
     public static void RegisterAmmoPointer(this SiloStorage silo)
     {
-        var plot = silo.GetComponentInParent<LandPlotLocation>();
-        var gadget = silo.GetComponentInParent<Gadget>();
-        
-        if (plot)
+        LandPlotLocation plot = null!;
+        Gadget gadget = null!;
+
+        try { plot = silo.GetComponentInParent<LandPlotLocation>(); }
+        catch { }
+
+        try { gadget = silo.GetComponentInParent<Gadget>(); }
+        catch { }
+
+        if (plot != null)
             silo.Ammo.RegisterAmmoPointer($"{plot._id}_{silo.AmmoSetReference.name}");
-        
-        if (gadget)
+        else if (gadget != null)
             silo.Ammo.RegisterAmmoPointer($"gadget{gadget.GetActorId()}_{silo.AmmoSetReference.name}");
+        else
+            SrLogger.LogWarning($"SiloStorage has no known parent type: {silo.name}", SrLogTarget.Both);
     }
 
     public static AmmoSlotDefinition GetSlotDefinition(ushort id)

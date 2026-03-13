@@ -28,11 +28,11 @@ public partial class NetworkPlayer : MonoBehaviour
     private MeshRenderer[] renderers;
     private Collider collider;
 
-    internal Vector3 previousPosition;
-    internal Vector3 nextPosition;
+    private Vector3 previousPosition;
+    private Vector3 nextPosition;
 
-    internal Vector2 previousRotation;
-    internal Vector2 nextRotation;
+    private Vector2 previousRotation;
+    private Vector2 nextRotation;
 
     private float interpolationStart;
     private float interpolationEnd;
@@ -44,9 +44,9 @@ public partial class NetworkPlayer : MonoBehaviour
     private Animator animator;
     private bool hasAnimationController;
 
-    internal RemotePlayer? model;
+    private RemotePlayer? model;
 
-    internal Transform camera;
+    private Transform camera;
 
     public string ID { get; internal set; }
 

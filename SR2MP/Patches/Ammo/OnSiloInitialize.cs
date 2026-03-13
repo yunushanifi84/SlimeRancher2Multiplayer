@@ -15,7 +15,7 @@ public static class OnSiloInitialize
 
     public static IEnumerator Initialize(SiloStorage siloStorage)
     {
-        yield return null;
+        yield return new WaitFrames(3);
 
         try
         {
