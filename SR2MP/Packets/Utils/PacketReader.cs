@@ -496,7 +496,7 @@ public static class PacketReaderDels
     }
 
     private static MethodInfo Method(string name) =>
-        typeof(PacketReader).GetMethod(name, BindingFlags.Instance | BindingFlags.Public)
+        typeof(PacketReader).GetMethod(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
         ?? throw new MissingMethodException($"PacketReader missing method: {name}");
 
     public static class NetObjectFactory<T> where T : INetObject, new()

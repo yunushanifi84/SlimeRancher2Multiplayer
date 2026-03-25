@@ -497,6 +497,6 @@ public static class PacketWriterDels
     }
 
     private static MethodInfo Method(string name) =>
-        typeof(PacketWriter).GetMethod(name, BindingFlags.Instance | BindingFlags.Public)
+        typeof(PacketWriter).GetMethod(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
         ?? throw new MissingMethodException($"PacketWriter missing method: {name}");
 }
