@@ -40,7 +40,7 @@ public sealed class ActorUpdateHandler : BasePacketHandler<ActorUpdatePacket>
 
         networkComponent.OnNetworkUpdate(packet);
 
-        if (networkComponent.regionMember?._hibernating == true)
+        if (networkComponent.RegionMember?._hibernating == true)
         {
             networkComponent.transform.position = packet.Position;
             networkComponent.transform.rotation = packet.Rotation;

@@ -18,9 +18,9 @@ public sealed class PlayerGadgetUpdate : BasePacketHandler<PlayerGadgetUpdatePac
 
         if (player == null) return true;
 
-        player.onlineGadgetMode = packet.Enabled;
-        player.onlineGadgetID = packet.CurrentGadget;
-        player.onlinePlacementValid = packet.ValidPlacement;
+        player.OnlineGadgetMode = packet.Enabled;
+        player.OnlineGadgetID = packet.CurrentGadget;
+        player.OnlinePlacementValid = packet.ValidPlacement;
 
         if (packet.Enabled)
             player.OnGadgetPositionReceived(packet.Position, packet.Rotation, packet.GadgetLocalRotation);

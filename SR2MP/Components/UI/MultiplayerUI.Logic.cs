@@ -4,7 +4,7 @@ using UnityEngine.InputSystem.Utilities;
 
 namespace SR2MP.Components.UI;
 
-public sealed partial class MultiplayerUI
+internal sealed partial class MultiplayerUI
 {
     public void Host(ushort port)
     {
@@ -50,7 +50,7 @@ public sealed partial class MultiplayerUI
     //     // TODO: Implement kick functionality
     // }
 
-    private void Update()
+    public void Update()
     {
         HandleUIToggle();
         HandleChatToggle();
@@ -95,7 +95,7 @@ public sealed partial class MultiplayerUI
 
     private void HandleChatInput()
     {
-        if (chatHidden || state == MenuState.DisconnectedMainMenu) return;
+        if (chatHidden || State == MenuState.DisconnectedMainMenu) return;
 
         var enterPressed = KeyCode.Return.OnKeyDown() || KeyCode.KeypadEnter.OnKeyDown();
         var escapePressed = KeyCode.Escape.OnKeyDown();

@@ -109,7 +109,7 @@ public sealed class RemoteFXManager
             foreach (var particle in resources.Where(x => x.name.Contains(obj.name)))
             {
                 if (!particle.GetComponent<NetworkPlayerFX>())
-                    particle.AddComponent<NetworkPlayerFX>().fxType = playerFX;
+                    particle.AddComponent<NetworkPlayerFX>().FXType = playerFX;
             }
         }
 
@@ -121,7 +121,7 @@ public sealed class RemoteFXManager
             foreach (var particle in resources.Where(x => x.name.Contains(obj.name)))
             {
                 if (!particle.GetComponent<NetworkWorldFX>())
-                    particle.AddComponent<NetworkWorldFX>().fxType = worldFX;
+                    particle.AddComponent<NetworkWorldFX>().FXType = worldFX;
             }
         }
 

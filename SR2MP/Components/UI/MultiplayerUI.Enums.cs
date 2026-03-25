@@ -1,6 +1,6 @@
 namespace SR2MP.Components.UI;
 
-public sealed partial class MultiplayerUI
+internal sealed partial class MultiplayerUI
 {
     public enum MenuState : byte
     {
@@ -20,15 +20,15 @@ public sealed partial class MultiplayerUI
     {
         None,
         ConnectionDeny,
-        Kick,
+        // Kick,
     }
 
-    public enum HelpTopic : byte
-    {
-        None,
-        Root,
-        PlayIt,
-        SyncState,
-        DiscordSupport
-    }
+    // public enum HelpTopic : byte
+    // {
+    //     None,
+    //     Root,
+    //     PlayIt,
+    //     SyncState,
+    //     DiscordSupport
+    // }
 }

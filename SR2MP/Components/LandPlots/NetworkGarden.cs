@@ -1,16 +1,17 @@
 ﻿using Il2CppMonomiPark.SlimeRancher.Regions;
+using JetBrains.Annotations;
 using MelonLoader;
 using SR2MP.Packets.LandPlots;
 
 namespace SR2MP.Components.LandPlots;
 
 [RegisterTypeInIl2Cpp(false)]
-public sealed class NetworkGarden : MonoBehaviour
+internal sealed class NetworkGarden : MonoBehaviour
 {
-    private SpawnResource garden;
+    private SpawnResource? garden;
     private RegionMember regionMember;
 
-    public static Dictionary<string, NetworkGarden> Gardens = new();
+    public static readonly Dictionary<string, NetworkGarden> Gardens = new();
 
     public bool LocallyOwned { get; set; }
     private double cachedNextSpawnTime;
@@ -18,7 +19,8 @@ public sealed class NetworkGarden : MonoBehaviour
     private float syncTimer;
     private const float SyncInterval = 5f;
 
-    private void Awake()
+    [UsedImplicitly]
+    public void Awake()
     {
         garden = GetComponent<SpawnResource>();
         regionMember = GetComponent<RegionMember>();
@@ -32,7 +34,7 @@ public sealed class NetworkGarden : MonoBehaviour
             LocallyOwned = false;
     }
 
-    private void Start()
+    public void Start()
     {
         if (regionMember == null)
             return;
@@ -71,16 +73,15 @@ public sealed class NetworkGarden : MonoBehaviour
 
             LocallyOwned = true;
 
-            if (garden != null && !string.IsNullOrEmpty(garden._id))
-            {
-                var packet = new GardenOwnershipPacket { GardenID = garden._id };
+            if (garden == null || string.IsNullOrEmpty(garden._id))
+                return;
 
-                Main.SendToAllOrServer(packet);
-            }
+            var packet = new GardenOwnershipPacket { GardenID = garden._id };
+            Main.SendToAllOrServer(packet);
         }
     }
 
-    private void Update()
+    public void Update()
     {
         if (!LocallyOwned || garden?._model == null)
             return;
@@ -104,7 +105,8 @@ public sealed class NetworkGarden : MonoBehaviour
         Main.SendToAllOrServer(packet);
     }
 
-    private void OnDestroy()
+    [UsedImplicitly]
+    public void OnDestroy()
     {
         if (garden != null && !string.IsNullOrEmpty(garden._id))
             Gardens.Remove(garden._id);

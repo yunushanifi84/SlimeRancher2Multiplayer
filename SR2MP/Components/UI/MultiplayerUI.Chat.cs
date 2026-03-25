@@ -3,33 +3,35 @@ using SR2MP.Packets;
 
 namespace SR2MP.Components.UI;
 
-public sealed partial class MultiplayerUI
+internal sealed partial class MultiplayerUI
 {
     private bool chatHidden = true;
+
     private readonly List<ChatMessage> chatMessages = new();
-    private readonly Queue<Action> pendingMessageRegistrations = new();
+    private readonly Queue<Action?> pendingMessageRegistrations = new();
     private readonly HashSet<string> processedMessageIds = new();
 
     private string chatInput = string.Empty;
     private bool isChatFocused;
-    private bool wasChatFocused;
+    // private bool wasChatFocused;
+
     private const string ChatInputName = "ChatInput";
 
     private bool shouldUnfocusChat;
     private bool internalChatToggle;
     private bool shouldFocusChat;
 
-    private bool disabledInput = false;
+    private bool disabledInput;
 
     private sealed class ChatMessage
     {
-        public string message;
-        public string playerName;
-        public long time;
-        public int lines;
-        public string messageId;
-        public bool isSystemMessage;
-        public byte systemMessageType;
+        public string Message;
+        public string PlayerName;
+        public long Time;
+        public int Lines;
+        // public string MessageId;
+        public bool IsSystemMessage;
+        public byte SystemMessageType;
     }
 
     public void RegisterChatMessage(string message, string playerName, string messageId)
@@ -52,13 +54,13 @@ public sealed partial class MultiplayerUI
 
             chatMessages.Add(new ChatMessage
             {
-                message = trimmedMessage,
-                playerName = displayName,
-                lines = lines,
-                time = dateTime,
-                messageId = messageId,
-                isSystemMessage = isSystem,
-                systemMessageType = systemType
+                Message = trimmedMessage,
+                PlayerName = displayName,
+                Lines = lines,
+                Time = dateTime,
+                // MessageId = messageId,
+                IsSystemMessage = isSystem,
+                SystemMessageType = systemType
             });
 
             processedMessageIds.Add(messageId);
@@ -84,10 +86,10 @@ public sealed partial class MultiplayerUI
     private int CalculateTotalLinesInUse()
     {
         var total = 0;
+
         foreach (var message in chatMessages)
-        {
-            total += message.lines;
-        }
+            total += message.Lines;
+
         return total;
     }
 
@@ -98,7 +100,7 @@ public sealed partial class MultiplayerUI
         while (totalLines > MaxChatLines && chatMessages.Count > 0)
         {
             var oldestMessage = chatMessages[0];
-            totalLines -= oldestMessage.lines;
+            totalLines -= oldestMessage.Lines;
             chatMessages.RemoveAt(0);
         }
     }
@@ -115,13 +117,14 @@ public sealed partial class MultiplayerUI
     [HideFromIl2Cpp]
     private void RenderChatMessage(ChatMessage message)
     {
-        var dateTime = DateTimeOffset.FromUnixTimeSeconds(message.time).ToLocalTime();
+        var dateTime = DateTimeOffset.FromUnixTimeSeconds(message.Time).ToLocalTime();
         var timeString = dateTime.ToString("HH:mm:ss");
 
         string formattedMessage;
-        if (message.isSystemMessage)
+
+        if (message.IsSystemMessage)
         {
-            var systemColor = message.systemMessageType switch
+            var systemColor = message.SystemMessageType switch
             {
                 SystemMessageConnect => ColorSystemConnect,
                 SystemMessageDisconnect => ColorSystemDisconnect,
@@ -129,11 +132,11 @@ public sealed partial class MultiplayerUI
                 _ => ColorSystemNormal
             };
 
-            formattedMessage = $"<color={systemColor}>[{timeString}] SYSTEM: {message.message}</color>";
+            formattedMessage = $"<color={systemColor}>[{timeString}] SYSTEM: {message.Message}</color>";
         }
         else
         {
-            formattedMessage = $"[{timeString}] {message.playerName}: {message.message}";
+            formattedMessage = $"[{timeString}] {message.PlayerName}: {message.Message}";
         }
 
         GUI.Label(CalculateChatMessageRect(formattedMessage), formattedMessage);
@@ -217,15 +220,16 @@ public sealed partial class MultiplayerUI
         if (focus) shouldFocusChat = false;
         else shouldUnfocusChat = false;
 
-        if (focus && !disabledInput)
+        switch (focus)
         {
-            DisableInput();
-            disabledInput = true;
-        }
-        else if (!focus && disabledInput)
-        {
-            EnableInput();
-            disabledInput = false;
+            case true when !disabledInput:
+                DisableInput();
+                disabledInput = true;
+                break;
+            case false when disabledInput:
+                EnableInput();
+                disabledInput = false;
+                break;
         }
     }
 
@@ -235,31 +239,38 @@ public sealed partial class MultiplayerUI
         var wasPreviouslyFocused = isChatFocused;
         isChatFocused = currentChatFocus == ChatInputName;
 
-        if (isChatFocused && !wasPreviouslyFocused)
+        switch (isChatFocused)
         {
-            if (!disabledInput)
+            case true when !wasPreviouslyFocused:
             {
-                DisableInput();
-                disabledInput = true;
+                if (!disabledInput)
+                {
+                    DisableInput();
+                    disabledInput = true;
+                }
+
+                break;
             }
-        }
-        else if (!isChatFocused && wasPreviouslyFocused)
-        {
-            if (disabledInput)
+            case false when wasPreviouslyFocused:
             {
-                EnableInput();
-                disabledInput = false;
+                if (disabledInput)
+                {
+                    EnableInput();
+                    disabledInput = false;
+                }
+
+                break;
             }
         }
 
-        wasChatFocused = isChatFocused;
+        // wasChatFocused = isChatFocused;
     }
 
     private void DrawChat()
     {
-        if (state == MenuState.DisconnectedMainMenu || chatHidden) return;
+        if (State == MenuState.DisconnectedMainMenu || chatHidden) return;
 
-        float chatY = Screen.height / 2;
+        var chatY = Screen.height / 2;
 
         GUI.Box(new Rect(6, chatY, ChatWidth, ChatHeight),
                 "Chat (F5 to toggle)");
@@ -278,8 +289,7 @@ public sealed partial class MultiplayerUI
 
         if (string.IsNullOrEmpty(chatInput) && !isChatFocused)
         {
-            GUIStyle placeholderStyle = new(GUI.skin.textField);
-            placeholderStyle.normal.textColor = Color.gray;
+            var placeholderStyle = new GUIStyle(GUI.skin.textField) { normal = { textColor = Color.gray } };
 
             GUI.Label(
                 new Rect(6 + HorizontalSpacing,

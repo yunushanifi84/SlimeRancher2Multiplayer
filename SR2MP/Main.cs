@@ -178,10 +178,10 @@ public sealed class Main : SR2EExpansionV3
 
         var textComponent = name.AddComponent<TextMeshPro>();
 
-        networkComponent.usernamePanel = textComponent;
+        networkComponent.UsernamePanel = textComponent;
 
         var footstepFX = new GameObject("Footstep") { transform = { parent = playerPrefab.transform } };
-        playerPrefab.AddComponent<NetworkPlayerFootstep>().spawnAtTransform = footstepFX.transform;
+        playerPrefab.AddComponent<NetworkPlayerFootstep>().SpawnAtTransform = footstepFX.transform;
 
         Object.DontDestroyOnLoad(playerPrefab);
     }

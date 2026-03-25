@@ -1,6 +1,6 @@
 namespace SR2MP.Components.UI;
 
-public sealed partial class MultiplayerUI
+internal sealed partial class MultiplayerUI
 {
     private bool multiplayerUIHidden;
     private string usernameInput = "Player";
@@ -8,7 +8,8 @@ public sealed partial class MultiplayerUI
     private string portInput = string.Empty;
     private string hostPortInput = "1919";
     private bool allowCheatsInput;
-    public string connectionFailedReason = null!;
+
+    public string ConnectionFailedReason = null!;
 
     private void FirstTimeScreen()
     {
@@ -62,7 +63,7 @@ public sealed partial class MultiplayerUI
 
     private void DrawError()
     {
-        switch (errorState)
+        switch (ErrorState)
         {
             case ErrorType.ConnectionDeny:
                 ConnectionFailedScreen();
@@ -73,7 +74,7 @@ public sealed partial class MultiplayerUI
     private void ConnectionFailedScreen()
     {
         DrawText("Failed to connect to server!");
-        DrawText(connectionFailedReason!);
+        DrawText(ConnectionFailedReason);
 
         if (GUI.Button(CalculateButtonLayout(6), "Close"))
             viewingSettings = true;

@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace SR2MP.Packets.Utils;
 
 [AttributeUsage(AttributeTargets.Class)]
+[MeansImplicitUse(ImplicitUseTargetFlags.WithMembers)]
 public sealed class PacketHandlerAttribute : Attribute
 {
     public byte PacketType { get; }

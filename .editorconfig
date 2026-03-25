@@ -168,3 +168,6 @@ dotnet_diagnostic.CS8618.severity = none
 
 # IDE0079: Remove unnecessary suppression
 dotnet_diagnostic.IDE0079.severity = none
+
+# CS0436: Type conflicts with imported type
+dotnet_diagnostic.CS0436.severity = none

@@ -2,15 +2,16 @@ using SR2E;
 
 namespace SR2MP.Components.UI;
 
-public sealed partial class MultiplayerUI
+internal sealed partial class MultiplayerUI
 {
-    private bool viewingSettings = false;
+    private bool viewingSettings;
     private bool firstTime = true;
-    private bool viewingHelp = false;
+    private bool viewingHelp;
 
-    public MenuState state = MenuState.Hidden;
-    public ErrorType errorState = ErrorType.None;
-    private bool chatShown = false;
+    public MenuState State = MenuState.Hidden;
+    public ErrorType ErrorState = ErrorType.None;
+
+    private bool chatShown;
     private MenuState previousState = MenuState.Hidden;
 
     private static bool GetIsLoading()
@@ -27,13 +28,13 @@ public sealed partial class MultiplayerUI
         var connected = Main.Client.IsConnected;
         var hosting = Main.Server.IsRunning();
 
-        if (!string.IsNullOrWhiteSpace(connectionFailedReason))
+        if (!string.IsNullOrWhiteSpace(ConnectionFailedReason))
         {
-            errorState = ErrorType.ConnectionDeny;
+            ErrorState = ErrorType.ConnectionDeny;
             return MenuState.Error;
         }
 
-        errorState = ErrorType.None;
+        ErrorState = ErrorType.None;
 
         if (loading) return MenuState.Hidden;
         if (firstTime) return MenuState.SettingsInitial;
@@ -47,9 +48,9 @@ public sealed partial class MultiplayerUI
 
     private void UpdateChatVisibility()
     {
-        var isInGame = state is MenuState.DisconnectedInGame or MenuState.ConnectedClient or MenuState.ConnectedHost;
+        var isInGame = State is MenuState.DisconnectedInGame or MenuState.ConnectedClient or MenuState.ConnectedHost;
 
-        var isMainMenu = state == MenuState.DisconnectedMainMenu;
+        var isMainMenu = State == MenuState.DisconnectedMainMenu;
 
         if (isMainMenu)
         {
@@ -72,6 +73,6 @@ public sealed partial class MultiplayerUI
             }
         }
 
-        previousState = state;
+        previousState = State;
     }
 }

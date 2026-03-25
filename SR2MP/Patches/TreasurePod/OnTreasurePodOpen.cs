@@ -13,7 +13,7 @@ internal static class OnTreasurePodOpen
 
         var packet = new TreasurePodPacket()
         {
-            ID = int.Parse(__instance._id.Replace("pod",""))
+            ID = int.Parse(__instance._id.Replace("pod", string.Empty))
         };
 
         Main.SendToAllOrServer(packet);

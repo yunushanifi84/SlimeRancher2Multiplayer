@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using MelonLoader;
 using SR2E.Utils;
 
@@ -5,13 +6,14 @@ namespace SR2MP.Components.UI;
 
 // TODO: Asset bundle
 [RegisterTypeInIl2Cpp(false)]
-public sealed partial class MultiplayerUI : MonoBehaviour
+internal sealed partial class MultiplayerUI : MonoBehaviour
 {
     public static MultiplayerUI Instance { get; private set; }
 
-    private bool didUnfocus = false;
+    private bool didUnfocus;
 
-    private void Awake()
+    [UsedImplicitly]
+    public void Awake()
     {
         firstTime = Main.SetupUI;
         usernameInput = Main.Username;
@@ -30,16 +32,17 @@ public sealed partial class MultiplayerUI : MonoBehaviour
         Instance = this;
     }
 
-    private void OnDestroy()
-    {
-        Instance = null!;
-    }
+    [UsedImplicitly]
+#pragma warning disable CA1822
+    public void OnDestroy() => Instance = null!;
+#pragma warning restore CA1822
 
-    private void OnGUI()
+    [UsedImplicitly]
+    public void OnGUI()
     {
         if (Event.current.type == EventType.Layout)
         {
-            state = GetState();
+            State = GetState();
             UpdateChatVisibility();
         }
 
@@ -62,11 +65,11 @@ public sealed partial class MultiplayerUI : MonoBehaviour
 
     private void DrawWindow()
     {
-        if (state == MenuState.Hidden) return;
+        if (State == MenuState.Hidden) return;
 
         GUI.Box(new Rect(6, 6, WindowWidth, WindowHeight), "SR2MP (F4 to toggle)");
 
-        switch (state)
+        switch (State)
         {
             case MenuState.SettingsInitial:
                 FirstTimeScreen();
@@ -89,6 +92,9 @@ public sealed partial class MultiplayerUI : MonoBehaviour
             case MenuState.Error:
                 DrawError();
                 break;
+            case MenuState.Hidden:
+            case MenuState.SettingsHelp:
+            case MenuState.Kicked:
             default:
                 UnimplementedScreen();
                 break;

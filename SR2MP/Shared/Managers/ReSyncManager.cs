@@ -493,7 +493,7 @@ public sealed class ReSyncManager
 
         foreach (var treasurePod in GameState.pods)
         {
-            var podId = int.Parse(treasurePod.key.Replace("pod", ""));
+            var podId = int.Parse(treasurePod.key.Replace("pod", string.Empty));
             treasurePods.Add(podId, treasurePod.value.state);
         }
 

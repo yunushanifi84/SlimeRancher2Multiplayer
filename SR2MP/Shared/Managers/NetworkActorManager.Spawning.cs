@@ -86,10 +86,10 @@ public sealed partial class NetworkActorManager
 
         var networkComponent = actor.AddComponent<NetworkActor>();
         networkComponent.LocallyOwned = false;
-        networkComponent.previousPosition = position;
-        networkComponent.nextPosition = position;
-        networkComponent.previousRotation = rotation;
-        networkComponent.nextRotation = rotation;
+        networkComponent.PreviousPosition = position;
+        networkComponent.NextPosition = position;
+        networkComponent.PreviousRotation = rotation;
+        networkComponent.NextRotation = rotation;
         actor.transform.position = position;
         actorManager.Actors[actorId.Value] = model;
 
@@ -207,10 +207,10 @@ public sealed partial class NetworkActorManager
 
         var networkComponent = actor.AddComponent<NetworkActor>();
         networkComponent.LocallyOwned = false;
-        networkComponent.previousPosition = position;
-        networkComponent.nextPosition = position;
-        networkComponent.previousRotation = rotation;
-        networkComponent.nextRotation = rotation;
+        networkComponent.PreviousPosition = position;
+        networkComponent.NextPosition = position;
+        networkComponent.PreviousRotation = rotation;
+        networkComponent.NextRotation = rotation;
         actor.transform.position = position;
         actorManager.Actors[actorId.Value] = model;
 
@@ -278,10 +278,10 @@ public sealed partial class NetworkActorManager
 
         var networkComponent = actor.AddComponent<NetworkActor>();
         networkComponent.LocallyOwned = false;
-        networkComponent.previousPosition = position;
-        networkComponent.nextPosition = position;
-        networkComponent.previousRotation = rotation;
-        networkComponent.nextRotation = rotation;
+        networkComponent.PreviousPosition = position;
+        networkComponent.NextPosition = position;
+        networkComponent.PreviousRotation = rotation;
+        networkComponent.NextRotation = rotation;
         actor.transform.position = position;
         actorManager.Actors[actorId.Value] = model;
 
@@ -359,10 +359,10 @@ public sealed partial class NetworkActorManager
 
         var networkComponent = actor.AddComponent<NetworkActor>();
         networkComponent.LocallyOwned = false;
-        networkComponent.previousPosition = position;
-        networkComponent.nextPosition = position;
-        networkComponent.previousRotation = rotation;
-        networkComponent.nextRotation = rotation;
+        networkComponent.PreviousPosition = position;
+        networkComponent.NextPosition = position;
+        networkComponent.PreviousRotation = rotation;
+        networkComponent.NextRotation = rotation;
         actor.transform.position = position;
         actorManager.Actors[actorId.Value] = model;
 
@@ -453,10 +453,10 @@ public sealed partial class NetworkActorManager
 
         var networkComponent = actor.AddComponent<NetworkActor>();
         networkComponent.LocallyOwned = false;
-        networkComponent.previousPosition = position;
-        networkComponent.nextPosition = position;
-        networkComponent.previousRotation = rotation;
-        networkComponent.nextRotation = rotation;
+        networkComponent.PreviousPosition = position;
+        networkComponent.NextPosition = position;
+        networkComponent.PreviousRotation = rotation;
+        networkComponent.NextRotation = rotation;
         actor.transform.position = position;
         actorManager.Actors[actorId.Value] = model;
 
