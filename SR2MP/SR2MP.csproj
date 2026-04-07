@@ -11,6 +11,7 @@
       <DebugType>embedded</DebugType>
       <NoWarn>1701;1702;RCS1037;CS0436</NoWarn>
       <OutputType>Library</OutputType>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

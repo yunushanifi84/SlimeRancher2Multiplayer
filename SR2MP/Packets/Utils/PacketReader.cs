@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using JetBrains.Annotations;
 using SR2MP.Shared.Utils;
@@ -149,6 +150,22 @@ public sealed class PacketReader : PacketBuffer
     /// <inheritdoc cref="EnsureReadable"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public float ReadFloat() => BinaryPrimitives.ReadSingleLittleEndian(ReadRequest(4));
+
+    /// <summary>
+    /// Reads a Half.
+    /// </summary>
+    /// <returns>The read Half.</returns>
+    /// <inheritdoc cref="EnsureReadable"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Half ReadHalf() => BinaryPrimitives.ReadHalfLittleEndian(ReadRequest(2));
+
+    /// <summary>
+    /// Reads a decimal.
+    /// </summary>
+    /// <returns>The read decimal.</returns>
+    /// <inheritdoc cref="EnsureReadable"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public decimal ReadDecimal() => MemoryMarshal.Read<decimal>(ReadRequest(16));
 
     /// <summary>
     /// Reads a packed int.
@@ -486,7 +503,7 @@ public sealed class PacketReader : PacketBuffer
             case < 0:
                 return null;
             case 0:
-                return returnNullOnZero ? null : new();
+                return returnNullOnZero ? null : new(0);
         }
 
         EnsureReadable(count * 2); // A dictionary must take at least 2N bytes, one for the key and the other for the value
@@ -831,6 +848,16 @@ public static class PacketReaderDels
     public static readonly Func<PacketReader, float4> Float4 = reader => reader.ReadFloat4();
 
     /// <summary>
+    /// A delegate to read a Half.
+    /// </summary>
+    public static readonly Func<PacketReader, Half> Half = reader => reader.ReadHalf();
+
+    /// <summary>
+    /// A delegate to read a decimal.
+    /// </summary>
+    public static readonly Func<PacketReader, decimal> Decimal = reader => reader.ReadDecimal();
+
+    /// <summary>
     /// Caches a reading delegate for types implementing INetObject.
     /// </summary>
     /// <typeparam name="T">The net object type.</typeparam>
@@ -858,6 +885,7 @@ public static class PacketReaderDels
     /// Caches a reading delegate for value <see cref="Tuple"/>s.
     /// </summary>
     /// <typeparam name="T">The tuple type.</typeparam>
+    /// <remarks>If you are using tuples of elements greater than 7 values...why? Just use an <see cref="INetObject"/> at that point.</remarks>
     public static class Tuple<T> where T : struct, ITuple
     {
         /// <summary>
@@ -1010,6 +1038,7 @@ public static class PacketReaderDels
         [typeof(bool)] = nameof(PacketReader.ReadBool),
         [typeof(uint)] = nameof(PacketReader.ReadUInt),
         [typeof(long)] = nameof(PacketReader.ReadLong),
+        [typeof(Half)] = nameof(PacketReader.ReadHalf),
         [typeof(sbyte)] = nameof(PacketReader.ReadSByte),
         [typeof(short)] = nameof(PacketReader.ReadShort),
         [typeof(ulong)] = nameof(PacketReader.ReadULong),
@@ -1018,6 +1047,7 @@ public static class PacketReaderDels
         [typeof(double)] = nameof(PacketReader.ReadDouble),
         [typeof(string)] = nameof(PacketReader.ReadString),
         [typeof(float4)] = nameof(PacketReader.ReadFloat4),
+        [typeof(decimal)] = nameof(PacketReader.ReadDecimal),
         [typeof(Vector3)] = nameof(PacketReader.ReadVector3),
         [typeof(Quaternion)] = nameof(PacketReader.ReadQuaternion),
     });

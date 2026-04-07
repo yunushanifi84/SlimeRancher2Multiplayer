@@ -3,6 +3,7 @@ using System.Reflection;
 using HarmonyLib;
 using JetBrains.Annotations;
 using SR2MP.Packets.Utils;
+using SR2MP.Shared.Utils;
 
 namespace SR2MP.Api;
 
@@ -46,7 +47,7 @@ public static class ApiHandlers
         var gotName = assembly.GetName();
         var name = gotName.Name;
         var fullName = assembly.FullName ?? gotName.FullName;
-        var modId = ComputeDeterministicModId(fullName);
+        var modId = HashCalculator.FoldHash(HashCalculator.ComputeHashOfString(fullName));
 
         // Fast path: assembly already registered with same id
         if (Holders.TryGetValue(modId, out var existingHolder))
@@ -91,7 +92,7 @@ public static class ApiHandlers
     }
 
     /// <summary>
-    /// Registers custom serialization logic for a type, allowing third-party types to be used seamlessly.
+    /// Registers custom serialization logic for a type, allowing third-party types to be used seamlessly. Use PacketWriterDels.Object and PacketReaderDels.Object to access the logic.
     /// </summary>
     public static void RegisterCustomTypeSerialisation<T>(Func<PacketReader, T> reader, Action<PacketWriter, T> writer)
     {
@@ -103,30 +104,6 @@ public static class ApiHandlers
 
         PacketReaderDels.Object<T>.Reader = reader;
         PacketWriterDels.Object<T>.Writer = writer;
-    }
-
-    /// <summary>
-    /// Computes a deterministic 16-bit ModId from assembly fully qualified name.<br/>
-    /// Uses FNV-1a 32-bit and folds to 16-bit to avoid arithmetic overflow exceptions and keep deterministic results.
-    /// </summary>
-    private static ushort ComputeDeterministicModId(string assemblyFullName)
-    {
-        unchecked
-        {
-            const uint fnvOffset = 2166136261u;
-            const uint fnvPrime = 16777619u;
-
-            var hash = fnvOffset;
-
-            foreach (var ch in assemblyFullName)
-            {
-                hash ^= ch;
-                hash *= fnvPrime;
-            }
-
-            // Fold 32 -> 16
-            return (ushort)(hash ^ (hash >> 16));
-        }
     }
 
     private static void RegisterPacketHandlers(IEnumerable<Type> allTypes, ApiHolder holder)

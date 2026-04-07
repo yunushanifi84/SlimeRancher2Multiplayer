@@ -1,18 +1,26 @@
 using System.Collections.Concurrent;
 using System.Text;
 
-namespace SR2MP.Packets.Utils;
+namespace SR2MP.Shared.Utils;
 
-internal static class NetworkStringPool
+/// <summary>
+/// A pooling class to help pool reusable string objects.
+/// </summary>
+public static class NetworkStringPool
 {
     private static readonly ConcurrentDictionary<uint, string> pool = new();
 
+    /// <summary>
+    /// Gets a string representing a span of bytes. If the string does not exist, it creates one and caches it for future use.
+    /// </summary>
+    /// <param name="utf8Bytes">The bytes of the string.</param>
+    /// <returns>The string represented by the bytes.</returns>
     public static string GetOrAdd(Span<byte> utf8Bytes)
     {
         if (utf8Bytes.IsEmpty)
             return string.Empty;
 
-        var hash = ComputeFNV1aHash(utf8Bytes);
+        var hash = HashCalculator.ComputeHashOfBytes(utf8Bytes);
 
         if (pool.TryGetValue(hash, out var cachedString))
             return cachedString;
@@ -22,24 +30,5 @@ internal static class NetworkStringPool
         return newString;
     }
 
-    private static uint ComputeFNV1aHash(Span<byte> bytes)
-    {
-        unchecked
-        {
-            const uint fnvOffset = 2166136261;
-            const uint fnvPrime = 16777619;
-
-            var hash = fnvOffset;
-
-            foreach (var b in bytes)
-            {
-                hash ^= b;
-                hash *= fnvPrime;
-            }
-
-            return hash;
-        }
-    }
-
-    public static void Clear() => pool.Clear();
+    internal static void Clear() => pool.Clear();
 }

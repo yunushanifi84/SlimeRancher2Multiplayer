@@ -9,6 +9,7 @@ using System.Text;
 using JetBrains.Annotations;
 using SR2MP.Shared.Utils;
 using Unity.Mathematics;
+using System.Runtime.InteropServices;
 
 namespace SR2MP.Packets.Utils;
 
@@ -148,6 +149,22 @@ public sealed class PacketWriter : PacketBuffer
     /// <inheritdoc cref="EnsureCapacity"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteDouble(double value) => BinaryPrimitives.WriteDoubleLittleEndian(WriteAlloc(8), value);
+
+    /// <summary>
+    /// Writes a decimal.
+    /// </summary>
+    /// <param name="value">The decimal to write.</param>
+    /// <inheritdoc cref="EnsureCapacity"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void WriteDecimal(decimal value) => MemoryMarshal.Write(WriteAlloc(16), ref value);
+
+    /// <summary>
+    /// Writes a Half.
+    /// </summary>
+    /// <param name="value">The Half to write.</param>
+    /// <inheritdoc cref="EnsureCapacity"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void WriteHalf(Half value) => BinaryPrimitives.WriteHalfLittleEndian(WriteAlloc(2), value);
 
     private void WriteFloats(ReadOnlySpan<float> values)
     {
@@ -952,6 +969,16 @@ public static class PacketWriterDels
     public static readonly Action<PacketWriter, float4> Float4 = (writer, value) => writer.WriteFloat4(value);
 
     /// <summary>
+    /// A delegate to write a half.
+    /// </summary>
+    public static readonly Action<PacketWriter, Half> Half = (writer, value) => writer.WriteHalf(value);
+
+    /// <summary>
+    /// A delegate to write a decimal.
+    /// </summary>
+    public static readonly Action<PacketWriter, decimal> Decimal = (writer, value) => writer.WriteDecimal(value);
+
+    /// <summary>
     /// Caches a writing delegate for types implementing <see cref="INetObject"/>.
     /// </summary>
     /// <typeparam name="T">The net object type.</typeparam>
@@ -979,6 +1006,7 @@ public static class PacketWriterDels
     /// Caches a writing delegate for value <see cref="Tuple"/>s.
     /// </summary>
     /// <typeparam name="T">The tuple type.</typeparam>
+    /// <remarks>If you are using tuples of elements greater than 7 values...why? Just use an <see cref="INetObject"/> at that point.</remarks>
     public static class Tuple<T> where T : struct, ITuple
     {
         /// <summary>
@@ -1093,6 +1121,7 @@ public static class PacketWriterDels
         [typeof(uint)] = nameof(PacketWriter.WriteUInt),
         [typeof(long)] = nameof(PacketWriter.WriteLong),
         [typeof(bool)] = nameof(PacketWriter.WriteBool),
+        [typeof(Half)] = nameof(PacketWriter.WriteHalf),
         [typeof(short)] = nameof(PacketWriter.WriteShort),
         [typeof(ulong)] = nameof(PacketWriter.WriteULong),
         [typeof(sbyte)] = nameof(PacketWriter.WriteSByte),
@@ -1101,6 +1130,7 @@ public static class PacketWriterDels
         [typeof(double)] = nameof(PacketWriter.WriteDouble),
         [typeof(string)] = nameof(PacketWriter.WriteString),
         [typeof(float4)] = nameof(PacketWriter.WriteFloat4),
+        [typeof(decimal)] = nameof(PacketWriter.WriteDecimal),
         [typeof(Vector3)] = nameof(PacketWriter.WriteVector3),
         [typeof(Quaternion)] = nameof(PacketWriter.WriteQuaternion),
     });
