@@ -1,4 +1,4 @@
-﻿// Copied from https://github.com/saltacc/'s PR to https://github.com/pyeight/SlimeRancher2Multiplayer/ :
+﻿// Copied from https://github.com/saltacc/'s PR to https://github.com/pyeight/SlimeRancher2Multiplayer/
 // https://github.com/pyeight/SlimeRancher2Multiplayer/pull/32/
 
 using System;
