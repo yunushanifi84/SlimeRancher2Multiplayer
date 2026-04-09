@@ -4,19 +4,51 @@ namespace SR2MP.Components.UI;
 
 internal sealed partial class MultiplayerUI
 {
+    private enum MainTab { Join, Host }
+    private enum JoinTab { Code, Manual }
+
+    public enum MenuState : byte
+    {
+        Hidden,
+        DisconnectedMainMenu,
+        DisconnectedInGame,
+        ConnectedClient,
+        ConnectedHost,
+        SettingsInitial,
+        SettingsMain,
+        SettingsHelp,
+        Kicked,
+        Error,
+    }
+
+    public enum ErrorType : byte
+    {
+        None,
+        UnknownError,
+        InvalidIP,
+        IPNotFound,
+    }
+
+    public enum HelpTopic : byte
+    {
+        Root,
+        PlayIt,
+        SyncState,
+        DiscordSupport,
+    }
+
+    public MenuState state = MenuState.Hidden;
+
     private bool viewingSettings;
     private bool firstTime = true;
     private bool viewingHelp;
-
-    public MenuState State = MenuState.Hidden;
-    public ErrorType ErrorState = ErrorType.None;
-
     private bool chatShown;
     private MenuState previousState = MenuState.Hidden;
 
-    private static bool GetIsLoading()
+    private bool GetIsLoading()
     {
-        return SystemContext.Instance.SceneLoader.CurrentSceneGroup.name is "StandaloneStart" or "CompanyLogo" or "LoadScene";
+        return SystemContext.Instance.SceneLoader.CurrentSceneGroup.name is
+            "StandaloneStart" or "CompanyLogo" or "LoadScene";
     }
 
     private MenuState GetState()
@@ -27,14 +59,6 @@ internal sealed partial class MultiplayerUI
         var loading = GetIsLoading();
         var connected = Main.Client.IsConnected;
         var hosting = Main.Server.IsRunning;
-
-        if (!string.IsNullOrWhiteSpace(ConnectionFailedReason))
-        {
-            ErrorState = ErrorType.ConnectionDeny;
-            return MenuState.Error;
-        }
-
-        ErrorState = ErrorType.None;
 
         if (loading) return MenuState.Hidden;
         if (firstTime) return MenuState.SettingsInitial;
@@ -49,30 +73,27 @@ internal sealed partial class MultiplayerUI
     private void UpdateChatVisibility()
     {
         var isInGame = State is MenuState.DisconnectedInGame or MenuState.ConnectedClient or MenuState.ConnectedHost;
-
         var isMainMenu = State == MenuState.DisconnectedMainMenu;
 
         if (isMainMenu)
         {
             chatHidden = true;
-            chatShown = false;
+            ChatShown = false;
             internalChatToggle = false;
             return;
         }
 
         if (internalChatToggle) return;
 
-        if (isInGame && !chatShown)
+        if (isInGame && !ChatShown)
         {
             chatHidden = false;
-            chatShown = true;
+            ChatShown = true;
 
-            if (previousState == MenuState.DisconnectedMainMenu || previousState == MenuState.Hidden)
-            {
+            if (PreviousState is MenuState.DisconnectedMainMenu or MenuState.Hidden)
                 ClearAndWelcome();
-            }
         }
 
-        previousState = State;
+        PreviousState = State;
     }
 }

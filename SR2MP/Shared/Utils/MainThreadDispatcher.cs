@@ -10,6 +10,9 @@ internal sealed class MainThreadDispatcher : MonoBehaviour
     public static MainThreadDispatcher Instance { get; private set; }
 
     // ReSharper disable once InconsistentNaming
+    private readonly ConcurrentQueue<Action> actionQueue = new();
+
+    // ReSharper disable once InconsistentNaming
     private readonly ConcurrentQueue<ClientHandleCache> clientPacketQueue = new();
 
     // ReSharper disable once InconsistentNaming
@@ -30,6 +33,21 @@ internal sealed class MainThreadDispatcher : MonoBehaviour
     public void Update()
 #pragma warning restore CA1822 // Mark members as static
     {
+        // todo: review
+
+        // Process general actions
+        while (actionQueue.TryDequeue(out var action))
+        {
+            try
+            {
+                action.Invoke();
+            }
+            catch (Exception ex)
+            {
+                SrLogger.LogError($"Error executing main thread action: {ex}", SrLogTarget.Both);
+            }
+        }
+
         // Process client packets
         while (clientPacketQueue.TryDequeue(out var clientCache))
         {
@@ -64,6 +82,8 @@ internal sealed class MainThreadDispatcher : MonoBehaviour
             }
         }
     }
+
+    public void Enqueue(Action action) => actionQueue.Enqueue(action);
 
     public void Enqueue(in ClientHandleCache cache) => clientPacketQueue.Enqueue(cache);
 

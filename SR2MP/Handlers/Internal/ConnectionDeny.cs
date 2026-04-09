@@ -13,9 +13,6 @@ internal sealed class ConnectionDenyHandler : BasePacketHandler<ConnectionDenyPa
         Main.Client.UpdateConnectionStatus(false);
         MultiplayerUI.Instance.RegisterSystemMessage("Connection was denied!",
             $"SYSTEM_CONNECTION_DENY_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", MultiplayerUI.SystemMessageClose);
-
-        MultiplayerUI.Instance.ConnectionFailedReason = packet.Reason;
-
         return false;
     }
 }

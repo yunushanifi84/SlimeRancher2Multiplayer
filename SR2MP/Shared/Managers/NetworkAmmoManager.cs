@@ -1,4 +1,6 @@
-﻿using Il2CppMonomiPark.SlimeRancher.Player;
+using System.Collections;
+using Il2CppMonomiPark.SlimeRancher.Player;
+using MelonLoader;
 using SR2MP.Shared.Utils;
 // ReSharper disable InconsistentNaming
 
@@ -80,35 +82,35 @@ internal static class NetworkAmmoManager
         }
     }
 
-    public static void RegisterAmmoPointer(this SiloStorage silo)
+    // todo: review
+    // not sure about the whole coroutine and inactive stuff
+
+    public static void RegisterAmmoPointer(this SiloStorage siloStorage)
     {
-        LandPlotLocation plot = null!;
-        Gadget gadget = null!;
+        MelonCoroutines.Start(RegisterAmmoPointerCoroutine(siloStorage));
+    }
 
-        try
-        {
-            plot = silo.GetComponentInParent<LandPlotLocation>();
-        }
-        catch
-        {
-            // ignored
-        }
+    private static IEnumerator RegisterAmmoPointerCoroutine(SiloStorage siloStorage)
+    {
+        yield return new WaitFrames(3);
 
-        try
-        {
-            gadget = silo.GetComponentInParent<Gadget>();
-        }
-        catch
-        {
-            // ignored
-        }
+        // needs to include inactive ones, don't question why
+        var plot = siloStorage.GetComponentInParent<LandPlotLocation>(true);
+        var gadget = siloStorage.GetComponentInParent<Gadget>(true);
 
         if (plot != null)
-            silo.Ammo.RegisterAmmoPointer($"{plot._id}_{silo.AmmoSetReference.name}");
-        else if (gadget != null)
-            silo.Ammo.RegisterAmmoPointer($"gadget{gadget.GetActorId()}_{silo.AmmoSetReference.name}");
-        else
-            SrLogger.LogWarning($"SiloStorage has no known parent type: {silo.name}");
+        {
+            siloStorage.Ammo.RegisterAmmoPointer($"{plot._id}_{siloStorage.AmmoSetReference.name}");
+            yield break;
+        }
+
+        if (gadget != null)
+        {
+            siloStorage.Ammo.RegisterAmmoPointer($"gadget{gadget.GetActorId()}_{siloStorage.AmmoSetReference.name}");
+            yield break;
+        }
+
+        SrLogger.LogWarning($"SiloStorage has no known parent type: {siloStorage.name}");
     }
 
     public static AmmoSlotDefinition GetSlotDefinition(ushort id) => slotDefinitions[id];

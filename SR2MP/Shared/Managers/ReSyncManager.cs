@@ -23,6 +23,9 @@ internal sealed class ReSyncManager
     private readonly Dictionary<string, DateTime> cooldowns = new();
     private static readonly TimeSpan CooldownDuration = TimeSpan.FromMinutes(2);
 
+    private DateTime lastSynchronizeAll = DateTime.MinValue;
+    private static readonly TimeSpan SynchronizeAllCooldown = TimeSpan.FromSeconds(5);
+
     public bool CanResync(IPEndPoint endPoint)
     {
         var key = endPoint.ToString();
@@ -53,18 +56,18 @@ internal sealed class ReSyncManager
         };
         Main.Server.SendToClient(approvePacket, endPoint);
 
+        SendPlotsPacket(endPoint);
         SendGordoSlimesPacket(endPoint);
         SendSwitchesPacket(endPoint);
-        SendPlotsPacket(endPoint);
-        SendWeatherPacket(endPoint);
-        SendUpgradesPacket(endPoint);
         SendRefineryPacket(endPoint);
         SendPediaPacket(endPoint);
         SendMapPacket(endPoint);
         SendAccessDoorsPacket(endPoint);
         SendTreasurePodsPacket(endPoint);
+        SendUpgradesPacket(endPoint);
         SendActorsPacket(endPoint, PlayerIdGenerator.GetPlayerIDNumber(playerId));
         SendPricesPacket(endPoint);
+        SendWeatherPacket(endPoint);
 
         SrLogger.LogMessage($"Player {playerId} resynced!", $"Player {playerId} ({endPoint}) resynced!");
     }
@@ -88,6 +91,14 @@ internal sealed class ReSyncManager
 
     public void SynchronizeAll()
     {
+        var now = DateTime.UtcNow;
+        if ((now - lastSynchronizeAll) < SynchronizeAllCooldown)
+        {
+            SynchronizeAllCooldownMessage();
+            return;
+        }
+        lastSynchronizeAll = now;
+
         var clients = Main.Server.ClientManager.GetAllClients().ToList();
 
         var gordosPacket       = CreateGordoSlimesPacket();
@@ -120,22 +131,24 @@ internal sealed class ReSyncManager
                 RainbowMoney = rainbowMoney,
                 AllowCheats = Main.AllowCheats
             };
+            Main.Server.SendToClient(approvePacket, client.EndPoint);
 
-            Main.Server.SendToClient(approvePacket,      client.EndPoint);
-            Main.Server.SendToClient(gordosPacket,       client.EndPoint);
-            Main.Server.SendToClient(switchesPacket,     client.EndPoint);
-            Main.Server.SendToClient(plotsPacket,        client.EndPoint);
-            Main.Server.SendToClient(upgradesPacket,     client.EndPoint);
-            Main.Server.SendToClient(refineryPacket,     client.EndPoint);
-            Main.Server.SendToClient(pediaPacket,        client.EndPoint);
-            Main.Server.SendToClient(mapPacket,          client.EndPoint);
-            Main.Server.SendToClient(accessDoorsPacket,  client.EndPoint);
-            Main.Server.SendToClient(treasurePodsPacket, client.EndPoint);
-            Main.Server.SendToClient(pricesPacket,       client.EndPoint);
+            Main.Server.SendToClient(gordosPacket,          client.EndPoint);
+            Main.Server.SendToClient(switchesPacket,        client.EndPoint);
+            Main.Server.SendToClient(plotsPacket,           client.EndPoint);
+            Main.Server.SendToClient(upgradesPacket,        client.EndPoint);
+            Main.Server.SendToClient(refineryPacket,        client.EndPoint);
+            Main.Server.SendToClient(pediaPacket,           client.EndPoint);
+            Main.Server.SendToClient(mapPacket,             client.EndPoint);
+            Main.Server.SendToClient(accessDoorsPacket,     client.EndPoint);
+            Main.Server.SendToClient(treasurePodsPacket,    client.EndPoint);
+            Main.Server.SendToClient(pricesPacket,          client.EndPoint);
 
             SendWeatherPacket(client.EndPoint);
 
             SendActorsPacket(client.EndPoint, PlayerIdGenerator.GetPlayerIDNumber(client.PlayerId));
+
+            SendWeatherPacket(client.EndPoint);
 
             SrLogger.LogPacketSize($"Player {client.PlayerId} resynced!");
         }
@@ -145,7 +158,7 @@ internal sealed class ReSyncManager
         var chatPacket = new ChatMessagePacket
         {
             Username = "SYSTEM",
-            Message = "You have been resynced by the server.",
+            Message = "The server issued a resync for all players.",
             MessageID = $"SYSTEM_RESYNC_ALL_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
             MessageType = MultiplayerUI.SystemMessageConnect
         };
@@ -174,6 +187,18 @@ internal sealed class ReSyncManager
             MessageType = MultiplayerUI.SystemMessageConnect
         };
         Main.Server.SendToClient(chatPacket, endPoint);
+    }
+
+    private static void SynchronizeAllCooldownMessage()
+    {
+        var chatPacket = new ChatMessagePacket
+        {
+            Username = "SYSTEM",
+            Message = "Resync all is on cooldown. Please wait before resyncing all players.",
+            MessageID = $"SYSTEM_RESYNCALL_COOLDOWN_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+            MessageType = MultiplayerUI.SystemMessageDisconnect
+        };
+        MultiplayerUI.Instance.RegisterSystemMessage(chatPacket.Message, chatPacket.MessageID, chatPacket.MessageType);
     }
 
     private static void SendUpgradesPacket(IPEndPoint client)

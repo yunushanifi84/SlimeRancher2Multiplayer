@@ -63,6 +63,7 @@ internal static class NetworkWeatherManager
 
     internal static IEnumerator Apply(WeatherPacket packet, bool immediate)
     {
+        yield return new WaitFrames(3);
         HandlingPacket = true;
 
         var registry = Registry;
@@ -84,12 +85,12 @@ internal static class NetworkWeatherManager
             var zone = registry._zones[zoneKey];
 
             var forecastCopy = new List<WeatherModel.ForecastEntry>();
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 0; i < zone.Forecast.Count; i++)
-                forecastCopy.Add(zone.Forecast[i]);
+            foreach (var forecast in zone.Forecast)
+                forecastCopy.Add(forecast);
 
             foreach (var forecast in forecastCopy)
             {
+                yield return null;
                 var patternInstance = registry.GetWeatherPatternInstance(
                     zoneKey,
                     forecast.Pattern
@@ -120,6 +121,7 @@ internal static class NetworkWeatherManager
             foreach (var forecast in data.WeatherForecasts)
             {
                 var pattern = WeatherUpdateHelper.GetPatternForZoneAndState(zoneKey, forecast.State.name);
+                yield return null;
 
                 zone.Forecast.Add(new WeatherModel.ForecastEntry
                 {
@@ -133,6 +135,7 @@ internal static class NetworkWeatherManager
                 yield return new WaitFrames(2);
             }
 
+            yield return null;
             zoneId++;
             yield return new WaitFrames(2);
         }
@@ -141,19 +144,23 @@ internal static class NetworkWeatherManager
             yield break;
 
         var activeCopy = new List<WeatherModel.ForecastEntry>();
-        // ReSharper disable once ForCanBeConvertedToForeach
-        for (var i = 0; i < activeZone.Forecast.Count; i++)
-            activeCopy.Add(activeZone.Forecast[i]);
+        foreach (var activeForecast in activeZone.Forecast)
+        {
+            activeCopy.Add(activeForecast);
+            yield return null;
+        }
 
         yield return null;
 
         foreach (var forecast in activeCopy)
         {
+            yield return null;
             var patternInstance = registry.GetWeatherPatternInstance(
                 localDirector.Zone,
                 forecast.Pattern
             );
 
+            yield return null;
             if (patternInstance == null)
             {
                 localDirector.RunState(forecast.State.Cast<IWeatherState>(), activeZone.Parameters, immediate);

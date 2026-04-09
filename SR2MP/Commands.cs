@@ -4,6 +4,7 @@ using SR2E;
 using SR2E.Utils;
 using SR2MP.Components.UI;
 using SR2MP.Packets;
+using SR2MP.Shared.Utils;
 
 namespace SR2MP;
 
@@ -24,7 +25,23 @@ internal sealed class HostCommand : SR2ECommand
     }
 }
 
-internal sealed class ChatCommand : SR2ECommand
+public sealed class AutoHostCommand : SR2ECommand
+{
+    private static Server.SR2MPServer? server;
+
+    public override string ID => "autohost";
+    public override string Usage => "autohost";
+
+    public override bool Execute(string[] args)
+    {
+        MenuEUtil.CloseOpenMenu();
+        MultiplayerUI.Instance.StartAutoHost();
+        SrLogger.LogMessage("Autohost command executed!");
+        return true;
+    }
+}
+
+public sealed class ChatCommand : SR2ECommand
 {
     public override string ID => "chat";
     public override string Usage => "chat <message>";
@@ -128,6 +145,19 @@ internal sealed class ResyncAllCommand : SR2ECommand
             Main.Server.reSyncManager.SynchronizeAll();
 
         SrLogger.LogMessage("Resync command executed!", SrLogTarget.Both);
+        return true;
+    }
+}
+
+public sealed class RemoveExceptionsCommand : SR2ECommand
+{
+    public override string ID => "removeexceptions";
+    public override string Usage => "removeexceptions";
+
+    public override bool Execute(string[] args)
+    {
+        Firewall.RemoveAllExceptions();
+        SrLogger.LogMessage("removeexceptions command executed!", SrLogTarget.Both);
         return true;
     }
 }

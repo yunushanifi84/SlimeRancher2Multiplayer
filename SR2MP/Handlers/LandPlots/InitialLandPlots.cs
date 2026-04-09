@@ -5,6 +5,9 @@ using SR2MP.Packets.Utils;
 
 namespace SR2MP.Handlers.LandPlots;
 
+// todo: review
+// not sure about the whole coroutine and inactive stuff
+
 [PacketHandler((byte)PacketType.InitialLandPlots, HandlerType.Client)]
 internal sealed class InitialLandPlotsHandler : BasePacketHandler<InitialLandPlotsPacket>
 {
@@ -18,10 +21,10 @@ internal sealed class InitialLandPlotsHandler : BasePacketHandler<InitialLandPlo
             {
                 HandlingPacket = true;
                 var location = model.gameObj.GetComponent<LandPlotLocation>();
-                var landPlotComponent = model.gameObj.GetComponentInChildren<LandPlot>();
+                var landPlotComponent = model.gameObj.GetComponentInChildren<LandPlot>(true);
                 location.Replace(landPlotComponent, GameContext.Instance.LookupDirector._plotPrefabDict[plot.Type]);
 
-                var landPlotComponent2 = model.gameObj.GetComponentInChildren<LandPlot>();
+                var landPlotComponent2 = model.gameObj.GetComponentInChildren<LandPlot>(true);
                 landPlotComponent2.ApplyUpgrades(plot.Upgrades.Cast<CppCollections.IEnumerable<LandPlot.Upgrade>>(), false);
                 HandlingPacket = false;
             }
@@ -36,7 +39,7 @@ internal sealed class InitialLandPlotsHandler : BasePacketHandler<InitialLandPlo
                     model.resourceGrowerDefinition = null;
                     if (!model.gameObj)
                         continue;
-                    var gardenPlot = model.gameObj.GetComponentInChildren<LandPlot>();
+                    var gardenPlot = model.gameObj.GetComponentInChildren<LandPlot>(true);
                     HandlingPacket = true;
                     gardenPlot.DestroyAttached();
                     HandlingPacket = false;
@@ -126,7 +129,7 @@ internal sealed class InitialLandPlotsHandler : BasePacketHandler<InitialLandPlo
 
                     if (!model.gameObj) break;
 
-                    foreach (var corralStorage in model.gameObj.GetComponentsInChildren<SiloStorage>())
+                    foreach (var corralStorage in model.gameObj.GetComponentsInChildren<SiloStorage>(true))
                     {
                         switch (corralStorage.AmmoSetReference.Guid)
                         {
@@ -141,7 +144,7 @@ internal sealed class InitialLandPlotsHandler : BasePacketHandler<InitialLandPlo
                         corralStorage.SetModel(model);
                     }
 
-                    var feeder = model.gameObj.GetComponentInChildren<FeederUpgrader>()
+                    var feeder = model.gameObj.GetComponentInChildren<FeederUpgrader>(true)
                         .Feeder
                         .transform
                         .GetChild(0)
