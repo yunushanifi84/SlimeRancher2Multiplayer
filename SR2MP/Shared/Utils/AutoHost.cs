@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-﻿// Modified of https://github.com/saltacc/'s PR to https://github.com/pyeight/SlimeRancher2Multiplayer/
-=======
-﻿// Modified of https://github.com/saltacc/'s PR to https://github.com/pyeight/SlimeRancher2Multiplayer/ :
->>>>>>> c501cf3f1ce8b8c54488c6982d52e82092d979f8
+// Modified of https://github.com/saltacc/'s PR to https://github.com/pyeight/SlimeRancher2Multiplayer/
 // https://github.com/pyeight/SlimeRancher2Multiplayer/pull/32/
 
 using System.Net;
