@@ -25,7 +25,7 @@ internal sealed class HostCommand : SR2ECommand
     }
 }
 
-public sealed class AutoHostCommand : SR2ECommand
+internal sealed class AutoHostCommand : SR2ECommand
 {
     private static Server.SR2MPServer? server;
 
@@ -41,7 +41,7 @@ public sealed class AutoHostCommand : SR2ECommand
     }
 }
 
-public sealed class ChatCommand : SR2ECommand
+internal sealed class ChatCommand : SR2ECommand
 {
     public override string ID => "chat";
     public override string Usage => "chat <message>";

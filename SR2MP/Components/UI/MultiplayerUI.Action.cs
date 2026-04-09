@@ -170,7 +170,7 @@ public sealed partial class MultiplayerUI
 
     private void HandleChatInput()
     {
-        if (chatHidden || state == MenuState.DisconnectedMainMenu) return;
+        if (chatHidden || State == MenuState.DisconnectedMainMenu) return;
 
         var enterPressed = KeyCode.Return.OnKeyDown() || KeyCode.KeypadEnter.OnKeyDown();
         var escapePressed = KeyCode.Escape.OnKeyDown();

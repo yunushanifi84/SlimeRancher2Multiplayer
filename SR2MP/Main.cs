@@ -76,9 +76,10 @@ public sealed class Main : SR2EExpansionV3
         if (Client.IsConnected)
             Client.SendPacket(packet);
 
-        if (Server.IsRunning())
+        if (Server.IsRunning)
         {
             Server.SendToAll(packet);
+        }
     }
 
     /// <summary>
@@ -183,7 +184,7 @@ public sealed class Main : SR2EExpansionV3
         File.WriteAllBytes(MelonEnvironment.UserDataDirectory + "/SR2MP/THIRD-PARTY-NOTICES.txt", array);
     }
 
-    public static void InitializePlayer(string objName, bool scale)
+    public static void InitializePlayer(string objName, float scale)
     {
         playerPrefab = new GameObject("PLAYER");
         playerPrefab.SetActive(false);
