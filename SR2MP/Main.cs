@@ -66,10 +66,7 @@ public sealed class Main : SR2EExpansionV3
         Server = new SR2MPServer();
     }
 
-    public override void OnInitializeMelon()
-    {
-        LoadBundledAssemblies();
-    }
+    public override void OnInitializeMelon() => LoadBundledAssemblies();
 
     internal static void SendToAllOrServer<T>(T packet) where T : IPacket
     {
@@ -77,9 +74,7 @@ public sealed class Main : SR2EExpansionV3
             Client.SendPacket(packet);
 
         if (Server.IsRunning)
-        {
             Server.SendToAll(packet);
-        }
     }
 
     /// <summary>
@@ -90,14 +85,10 @@ public sealed class Main : SR2EExpansionV3
     public static void SendDataToAllOrServer<T>(T packet) where T : ICustomPacket
     {
         if (Client.IsConnected)
-        {
             Client.SendData(packet);
-        }
 
         if (Server.IsRunning)
-        {
             Server.SendDataToAll(packet);
-        }
     }
 
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -141,12 +132,6 @@ public sealed class Main : SR2EExpansionV3
         ActorManager.Initialize(gameContext);
         NetworkSceneManager.Initialize(gameContext);
         NetworkAmmoManager.Initialize();
-
-        // Automatically inserts just by running the constructor.
-        //new CustomPauseMenuButton(
-        //    SR2ELanguageManger.AddTranslation("Multiplayer", "b.multiplayer", "UI"),
-        //    5,
-        //    () => SrLogger.LogMessage("Multiplayer menu open"));
     }
 
     internal static void SetConfigValue<T>(string key, T value)
@@ -157,16 +142,17 @@ public sealed class Main : SR2EExpansionV3
 
     private static void LoadBundledAssemblies()
     {
-        LoadBundledAssemblyResource("DiscordRPC.dll");
-        LoadBundledAssemblyResource("SharpOpenNat.dll");
+        LoadBundledAssemblyResource("DiscordRPC");
+        LoadBundledAssemblyResource("SharpOpenNat");
     }
 
     private static void LoadBundledAssemblyResource(string resourceName)
     {
-        using var stream = Core.GetManifestResourceStream($"SR2MP.Bundled.{resourceName}");
+        using var stream = Core.GetManifestResourceStream($"SR2MP.Bundled.{resourceName}.dll");
+
         if (stream == null)
         {
-            SrLogger.LogWarning($"Missing embedded dependency: {resourceName}", SrLogTarget.Both);
+            SrLogger.LogWarning("Missing embedded dependency: " + resourceName);
             return;
         }
 

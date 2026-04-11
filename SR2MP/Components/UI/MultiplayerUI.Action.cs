@@ -117,11 +117,11 @@ internal sealed partial class MultiplayerUI
             if (addresses.Length > 0)
                 return addresses[0].ToString();
 
-            SrLogger.LogWarning("IP address incorrect!", SrLogTarget.Both);
+            SrLogger.LogWarning("IP address incorrect!");
         }
         catch
         {
-            SrLogger.LogWarning("IP address could not be resolved! (are you connected to the internet?)", SrLogTarget.Both);
+            SrLogger.LogWarning("IP address could not be resolved! (are you connected to the internet?)");
         }
 
         return ip;

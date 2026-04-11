@@ -81,7 +81,7 @@ internal sealed partial class MultiplayerUI
 
     private MainTab DrawMainTabRow(string leftLabel, string rightLabel, MainTab tab)
     {
-        if (GUI.Toggle(CalculateButtonLayout(6, 2, 0), tab == MainTab.Join, leftLabel, GUI.skin.button))
+        if (GUI.Toggle(CalculateButtonLayout(6, 2), tab == MainTab.Join, leftLabel, GUI.skin.button))
             tab = MainTab.Join;
         if (GUI.Toggle(CalculateButtonLayout(6, 2, 1), tab == MainTab.Host, rightLabel, GUI.skin.button))
             tab = MainTab.Host;
@@ -90,7 +90,7 @@ internal sealed partial class MultiplayerUI
 
     private JoinTab DrawJoinTabRow(string leftLabel, string rightLabel, JoinTab tab)
     {
-        if (GUI.Toggle(CalculateButtonLayout(6, 2, 0), tab == JoinTab.Code, leftLabel, GUI.skin.button))
+        if (GUI.Toggle(CalculateButtonLayout(6, 2), tab == JoinTab.Code, leftLabel, GUI.skin.button))
             tab = JoinTab.Code;
         if (GUI.Toggle(CalculateButtonLayout(6, 2, 1), tab == JoinTab.Manual, rightLabel, GUI.skin.button))
             tab = JoinTab.Manual;
@@ -99,7 +99,7 @@ internal sealed partial class MultiplayerUI
 
     private HostTab DrawHostTabRow(string leftLabel, string middleLabel, string rightLabel, HostTab tab)
     {
-        if (GUI.Toggle(CalculateButtonLayout(6, 3, 0), tab == HostTab.Automatic, leftLabel, GUI.skin.button))
+        if (GUI.Toggle(CalculateButtonLayout(6, 3), tab == HostTab.Automatic, leftLabel, GUI.skin.button))
             tab = HostTab.Automatic;
         if (GUI.Toggle(CalculateButtonLayout(6, 3, 1), tab == HostTab.ManualCode, middleLabel, GUI.skin.button))
             tab = HostTab.ManualCode;

@@ -70,13 +70,13 @@ internal static class AutoHost
 
     private static AutoHostResult RunAutoHost()
     {
-        SrLogger.LogMessage("UPnP: Starting auto host...", SrLogTarget.Both);
+        SrLogger.LogMessage("UPnP: Starting auto host...");
         try
         {
             var externalIp = TryGetExternalIp();
             if (!IsUsableIp(externalIp))
             {
-                SrLogger.LogWarning("UPnP: Could not determine external IP from API.", SrLogTarget.Both);
+                SrLogger.LogWarning("UPnP: Could not determine external IP from API.");
                 return AutoHostResult.Failure("Could not determine your external IP address.");
             }
 
@@ -99,12 +99,12 @@ internal static class AutoHost
         }
         catch (NatDeviceNotFoundException ex)
         {
-            SrLogger.LogWarning($"UPnP: No device found: {ex.Message}", SrLogTarget.Both);
+            SrLogger.LogWarning($"UPnP: No device found: {ex.Message}");
             return AutoHostResult.Failure("UPnP is not available on this network.");
         }
         catch (Exception ex)
         {
-            SrLogger.LogWarning($"UPnP: Unexpected error: {ex.Message}", SrLogTarget.Both);
+            SrLogger.LogWarning($"UPnP: Unexpected error: {ex.Message}");
             return AutoHostResult.Failure($"UPnP failed: {ex.Message}.");
         }
     }
@@ -117,10 +117,10 @@ internal static class AutoHost
 
         if (devices.Count == 0)
         {
-            SrLogger.LogWarning("UPnP: No devices discovered.", SrLogTarget.Both);
+            SrLogger.LogWarning("UPnP: No devices discovered.");
             return null;
         }
-        SrLogger.LogMessage($"UPnP: Discovered {devices.Count} device(s).", SrLogTarget.Both);
+        SrLogger.LogMessage($"UPnP: Discovered {devices.Count} device(s).");
 
         var gateways = GetGatewayAddresses();
         SrLogger.LogMessage("UPnP: System gateways discovered", $"UPnP: System gateways: {string.Join(", ", gateways)}");
@@ -133,7 +133,7 @@ internal static class AutoHost
                 return device;
         }
 
-        SrLogger.LogWarning("UPnP: No device matched system gateway, falling back to first device.", SrLogTarget.Both);
+        SrLogger.LogWarning("UPnP: No device matched system gateway, falling back to first device.");
         return devices[0];
     }
 
@@ -152,11 +152,11 @@ internal static class AutoHost
             }
             catch (Exception ex)
             {
-                SrLogger.LogWarning($"UPnP: Port mapping attempt {attempt} failed: {ex.Message}", SrLogTarget.Both);
+                SrLogger.LogWarning($"UPnP: Port mapping attempt {attempt} failed: {ex.Message}");
             }
         }
 
-        SrLogger.LogWarning("UPnP: All port mapping attempts failed.", SrLogTarget.Both);
+        SrLogger.LogWarning("UPnP: All port mapping attempts failed.");
         return 0;
     }
 
@@ -188,7 +188,7 @@ internal static class AutoHost
         }
         catch (Exception ex)
         {
-            SrLogger.LogWarning($"UPnP: Failed to refresh port mapping: {ex.Message}", SrLogTarget.Both);
+            SrLogger.LogWarning($"UPnP: Failed to refresh port mapping: {ex.Message}");
         }
     }
 
@@ -203,7 +203,7 @@ internal static class AutoHost
         }
         catch (Exception ex)
         {
-            SrLogger.LogWarning($"UPnP: Failed to enumerate gateways: {ex.Message}", SrLogTarget.Both);
+            SrLogger.LogWarning($"UPnP: Failed to enumerate gateways: {ex.Message}");
         }
         return gateways;
     }
@@ -223,7 +223,7 @@ internal static class AutoHost
         }
         catch (Exception ex)
         {
-            SrLogger.LogWarning($"UPnP: External API request failed: {ex.Message}", SrLogTarget.Both);
+            SrLogger.LogWarning($"UPnP: External API request failed: {ex.Message}");
             return null;
         }
     }

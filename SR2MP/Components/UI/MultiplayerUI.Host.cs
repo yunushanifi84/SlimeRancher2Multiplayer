@@ -47,9 +47,9 @@ internal sealed partial class MultiplayerUI
 
     private void DrawHostManualCode()
     {
-        DrawText("Tunnel IP:", 2, 0);
+        DrawText("Tunnel IP:", 2);
         hostIpInput = GUI.TextField(CalculateInputLayout(6, 2, 1), hostIpInput);
-        DrawText("Tunnel Port:", 2, 0);
+        DrawText("Tunnel Port:", 2);
         hostPortInput = GUI.TextField(CalculateInputLayout(6, 2, 1), hostPortInput);
 
         if (!string.IsNullOrWhiteSpace(hostManualError))
@@ -79,7 +79,7 @@ internal sealed partial class MultiplayerUI
 
     private void DrawHostManualSimple()
     {
-        DrawText("Local Port:", 2, 0);
+        DrawText("Local Port:", 2);
         hostPortInput = GUI.TextField(CalculateInputLayout(6, 2, 1), hostPortInput);
 
         if (!string.IsNullOrWhiteSpace(hostManualError))

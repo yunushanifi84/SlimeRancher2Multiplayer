@@ -72,8 +72,7 @@ public sealed class ClientPacketManager
         {
             SrLogger.LogPacketAcknowledge(
                 $"Corrupted packet dropped: type={packetTypeHeader}" +
-                $"expected=0x{expectedCrc:X4} received=0x{receivedCrc:X4}",
-                SrLogTarget.Both);
+                $"expected=0x{expectedCrc:X4} received=0x{receivedCrc:X4}");
             return;
         }
 
@@ -162,7 +161,7 @@ public sealed class ClientPacketManager
             if (handlers.TryGetValue(packetTypeHeader, out var orderedHandler))
                 MainThreadDispatcher.Instance.Enqueue(new ClientHandleCache(reader, orderedHandler));
             else
-                SrLogger.LogError($"No client handler found for packet type: {packetType}", SrLogTarget.Both);
+                SrLogger.LogError($"No client handler found for packet type: {packetType}");
 
             return;
         }

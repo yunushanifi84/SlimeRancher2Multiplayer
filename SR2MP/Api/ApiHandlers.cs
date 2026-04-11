@@ -136,7 +136,7 @@ public static class ApiHandlers
 
         if (!RegisteredTypes.Add(type))
         {
-            SrLogger.LogWarning(type.Name + " is already registered! If you need custom serialisation for an existing type, wrap it in a custom struct or INetObject instead.");
+            SrLogger.LogWarning(type.Name + " is already supported! If you need custom serialisation for an existing type (be it already registered or natively supported), wrap it in a custom struct or INetObject instead.");
             return;
         }
 

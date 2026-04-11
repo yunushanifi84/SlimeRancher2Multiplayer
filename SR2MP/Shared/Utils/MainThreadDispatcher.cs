@@ -44,7 +44,7 @@ internal sealed class MainThreadDispatcher : MonoBehaviour
             }
             catch (Exception ex)
             {
-                SrLogger.LogError($"Error executing main thread action: {ex}", SrLogTarget.Both);
+                SrLogger.LogError($"Error executing main thread action: {ex}");
             }
         }
 

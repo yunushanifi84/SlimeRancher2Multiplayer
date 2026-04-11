@@ -255,7 +255,7 @@ public sealed class PacketWriter : PacketBuffer
     /// </summary>
     /// <param name="value">The Guid to write.</param>
     /// <inheritdoc cref="EnsureCapacity"/>
-    public void WriteGuid(Guid guid) => guid.TryWriteBytes(WriteAlloc(16));
+    public void WriteGuid(Guid value) => value.TryWriteBytes(WriteAlloc(16));
 
     /// <summary>
     /// Writes an enum value.
@@ -336,6 +336,8 @@ public sealed class PacketWriter : PacketBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WritePackedULong(ulong value) => WriteVarInt(value, 10);
 
+    // ReSharper disable InvalidXmlDocComment
+
     /// <summary>
     /// Writes a string prefixed by its length. Null or empty strings write a length of 0.
     /// </summary>
@@ -380,8 +382,6 @@ public sealed class PacketWriter : PacketBuffer
         EnsureCapacity(maxByteCount);
         Advance(Encoding.UTF8.GetBytes(value.AsSpan(), buffer.AsSpan(position)));
     }
-
-    // ReSharper disable InvalidXmlDocComment
 
     /// <summary>
     /// Writes a collection with a configurable count header.
@@ -1105,7 +1105,7 @@ public static class PacketWriterDels
             }
             catch
             {
-                return (_, _) => throw new NotImplementedException($"Type {typeof(T).Name} is not supported natively. Did you forget to register it?");
+                return (_, _) => throw new NotSupportedException($"Type {typeof(T).Name} is not supported natively. Did you forget to register it?");
             }
         }
     }

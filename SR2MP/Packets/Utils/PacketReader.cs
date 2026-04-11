@@ -1016,7 +1016,7 @@ public static class PacketReaderDels
             }
             catch
             {
-                return _ => throw new NotImplementedException($"Type {typeof(T).Name} is not supported natively. Did you forget to register it?");
+                return _ => throw new NotSupportedException($"Type {typeof(T).Name} is not supported natively. Did you forget to register it?");
             }
         }
     }

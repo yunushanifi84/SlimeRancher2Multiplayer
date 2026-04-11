@@ -181,21 +181,18 @@ internal sealed class ReliabilityManager
                     {
                         buffer[sequenceNumber] = processAction;
                         SrLogger.LogPacketSize(
-                            $"Buffered out-of-order packet: expected seq={expectedSequence}, got seq={sequenceNumber}, type={packetType}, buffer size={buffer.Count}",
-                            SrLogTarget.Both);
+                            $"Buffered out-of-order packet: expected seq={expectedSequence}, got seq={sequenceNumber}, type={packetType}, buffer size={buffer.Count}");
                     }
                     else
                     {
                         SrLogger.LogPacketSize(
-                            $"Reorder buffer full, dropping packet: seq={sequenceNumber}, type={packetType}",
-                            SrLogTarget.Both);
+                            $"Reorder buffer full, dropping packet: seq={sequenceNumber}, type={packetType}");
                     }
                 }
                 else
                 {
                     SrLogger.LogPacketAcknowledge(
-                        $"Out-of-order packet dropped: expected seq={expectedSequence}, got seq={sequenceNumber}, type={packetType}",
-                        SrLogTarget.Both);
+                        $"Out-of-order packet dropped: expected seq={expectedSequence}, got seq={sequenceNumber}, type={packetType}");
                 }
             }
 
@@ -254,8 +251,7 @@ internal sealed class ReliabilityManager
                     if (now - packet.FirstSendTime > MaxRetryTime || packet.SendCount >= MaxResendAttempts)
                     {
                         SrLogger.LogPacketAcknowledge(
-                            $"Packet {packet.PacketId} (type={packet.PacketType}) failed after {packet.SendCount} attempts",
-                            SrLogTarget.Both);
+                            $"Packet {packet.PacketId} (type={packet.PacketType}) failed after {packet.SendCount} attempts");
                         keysToRemove[removeCount++] = key;
                         continue;
                     }
@@ -272,8 +268,7 @@ internal sealed class ReliabilityManager
                         if (packet.SendCount % 10 == 0)
                         {
                             SrLogger.LogPacketAcknowledge(
-                                $"Resending packet {packet.PacketId} (type={packet.PacketType}) attempt #{packet.SendCount}",
-                                SrLogTarget.Both);
+                                $"Resending packet {packet.PacketId} (type={packet.PacketType}) attempt #{packet.SendCount}");
                         }
                     }
                 }

@@ -14,7 +14,7 @@ public static class Firewall
         return;
         if (!OperatingSystem.IsWindows())
         {
-            SrLogger.LogWarning("Firewall: Could not add a Firewall exception, you may have to add it on your own.", SrLogTarget.Both);
+            SrLogger.LogWarning("Firewall: Could not add a Firewall exception, you may have to add it on your own.");
             return;
         }
 
@@ -23,7 +23,7 @@ public static class Firewall
         RunShell($"advfirewall firewall add rule name=\"SR2MP UDP In {port}\" dir=in action=allow protocol=UDP localport={port} program=\"{path}\" enable=yes");
         RunShell($"advfirewall firewall add rule name=\"SR2MP UDP Out {port}\" dir=out action=allow protocol=UDP localport={port} program=\"{path}\" enable=yes");
         AddPort(port);
-        SrLogger.LogMessage($"Firewall: Added UDP exceptions for port {port}.", SrLogTarget.Both);
+        SrLogger.LogMessage($"Firewall: Added UDP exceptions for port {port}.");
     }
 
     internal static void RemoveException(ushort port)
@@ -34,7 +34,7 @@ public static class Firewall
         RunShell($"advfirewall firewall delete rule name=\"SR2MP UDP In {port}\"");
         RunShell($"advfirewall firewall delete rule name=\"SR2MP UDP Out {port}\"");
         RemovePort(port);
-        SrLogger.LogMessage($"Firewall: Removed UDP exceptions for port {port}.", SrLogTarget.Both);
+        SrLogger.LogMessage($"Firewall: Removed UDP exceptions for port {port}.");
     }
 
     internal static void RemoveAllExceptions()
@@ -45,11 +45,11 @@ public static class Firewall
         var ports = GetExceptionPorts();
         if (ports.Count == 0)
         {
-            SrLogger.LogMessage("Firewall: No tracked exceptions to remove.", SrLogTarget.Both);
+            SrLogger.LogMessage("Firewall: No tracked exceptions to remove.");
             return;
         }
 
-        SrLogger.LogMessage($"Firewall: Removing {ports.Count} tracked exception(s): {string.Join(", ", ports)}", SrLogTarget.Both);
+        SrLogger.LogMessage($"Firewall: Removing {ports.Count} tracked exception(s): {string.Join(", ", ports)}");
         foreach (var port in ports)
         {
             RunShell($"advfirewall firewall delete rule name=\"SR2MP UDP In {port}\"");
@@ -115,7 +115,7 @@ public static class Firewall
         }
         catch (Exception ex)
         {
-            SrLogger.LogWarning($"Firewall: Failed to execute: {ex.Message}", SrLogTarget.Both);
+            SrLogger.LogWarning($"Firewall: Failed to execute: {ex.Message}");
         }
     }
 }
