@@ -113,7 +113,7 @@ internal sealed partial class MultiplayerUI
 
     private void DrawHostingJoinCode()
     {
-        if (hostTab == HostTab.ManualCode)
+        if (hostTab == HostTab.ManualSimple)
         {
             DrawText("Join code unavailable, hosting manually");
             return;
