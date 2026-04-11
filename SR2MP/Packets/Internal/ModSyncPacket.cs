@@ -19,7 +19,7 @@ internal sealed class ModSyncPacket : IPacket
 
     public void Deserialise(PacketReader reader)
     {
-        PlayerId = reader.ReadStringOfSize(16)!;
+        PlayerId = reader.ReadPooledStringOfSize(16)!;
         Mods = reader.ReadDictionary(PacketReaderDels.UInt, PacketReaderDels.NetObject<ModData>.Reader)!;
     }
 }

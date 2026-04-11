@@ -60,7 +60,7 @@ public sealed class Main : SR2EExpansionV3
         preferences.CreateEntry("the_rock_plorts_are_coming", false,
             display_name: "<color=#ff0000>The rock plorts are coming</color> <alpha=#66>(Rock Plort Mode), BREAKS SAVES!");
 
-        // InsertLicensesFile();
+        InsertLicenseFiles();
 
         Client = new SR2MPClient();
         Server = new SR2MPServer();
@@ -148,26 +148,70 @@ public sealed class Main : SR2EExpansionV3
 
     private static void LoadBundledAssemblyResource(string resourceName)
     {
-        using var stream = Core.GetManifestResourceStream($"SR2MP.Bundled.{resourceName}.dll");
+        var fileName = $"{resourceName}.dll";
 
-        if (stream == null)
+        try
         {
-            SrLogger.LogWarning("Missing embedded dependency: " + resourceName);
-            return;
-        }
+            if (AppDomain.CurrentDomain.GetAssemblies()
+                .Any(a => a.GetName().Name == resourceName))
+            {
+                SrLogger.LogMessage($"Dependency {fileName} is already loaded.");
+                return;
+            }
 
-        var bytes = new byte[stream.Length];
-        _ = stream.Read(bytes, 0, bytes.Length);
-        Assembly.Load(bytes);
+            using var stream = Core.GetManifestResourceStream($"SR2MP.Bundled.{fileName}");
+
+            if (stream == null)
+            {
+                SrLogger.LogWarning("Missing embedded dependency: " + fileName);
+                return;
+            }
+
+            using var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            Assembly.Load(memoryStream.ToArray());
+        }
+        catch (Exception ex)
+        {
+            SrLogger.LogError($"Failed to load {fileName}: {ex.Message}");
+        }
     }
 
-    private static void InsertLicensesFile()
+    private static void InsertLicenseFiles()
     {
-        var manifestResourceStream = Core.GetManifestResourceStream("SR2MP.THIRD-PARTY-NOTICES.txt")!;
-        var array = new byte[manifestResourceStream.Length];
-        _ = manifestResourceStream.Read(array, 0, array.Length);
-        Directory.CreateDirectory(Path.Combine(MelonEnvironment.UserDataDirectory, "SR2MP"));
-        File.WriteAllBytes(MelonEnvironment.UserDataDirectory + "/SR2MP/THIRD-PARTY-NOTICES.txt", array);
+        InsertLicenseFile("DiscordRPC");
+        InsertLicenseFile("SharpOpenNat");
+    }
+
+    private static void InsertLicenseFile(string resourceName)
+    {
+        var dirPath = Path.Combine(MelonEnvironment.UserDataDirectory, "SR2MP");
+        var filePath = Path.Combine(dirPath, resourceName + ".lic.txt");
+
+        if (File.Exists(filePath))
+            return;
+
+        try
+        {
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
+
+            var resourcePath = $"SR2MP.Bundled.{resourceName}.lic.txt";
+            using var stream = Core.GetManifestResourceStream(resourcePath);
+
+            if (stream == null)
+            {
+                SrLogger.LogWarning("Missing embedded dependency: " + resourceName + ".lic.txt");
+                return;
+            }
+
+            using var fileStream = File.Create(filePath);
+            stream.CopyTo(fileStream);
+        }
+        catch (Exception ex)
+        {
+            SrLogger.LogError($"Failed to extract license for {resourceName}: {ex}");
+        }
     }
 
     public static void InitializePlayer(string objName, float scale)
