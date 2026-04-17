@@ -5,13 +5,12 @@ using SR2MP.Shared.Managers;
 
 namespace SR2MP.Patches.Ammo;
 
-[HarmonyPatch(typeof(AmmoSlotManager), nameof(AmmoSlotManager.MaybeAddToSlot), typeof(IdentifiableType),
-    typeof(Identifiable),
-    typeof(SlimeAppearance.AppearanceSaveSet),
+[HarmonyPatch(typeof(AmmoSlotManager), nameof(AmmoSlotManager.MaybeAddToAnySlot),
+    typeof(AmmoSlot.AmmoMetadata),
     typeof(bool))]
 internal static class OnAmmoAddToAny
 {
-    public static void Postfix(AmmoSlotManager __instance, ref bool __result, IdentifiableType id)
+    public static void Postfix(AmmoSlotManager __instance, ref bool __result, AmmoSlot.AmmoMetadata metadata)
     {
         if ((!Main.Client.IsConnected && !Main.Server.IsRunning) || HandlingPacket) return;
 
@@ -20,7 +19,7 @@ internal static class OnAmmoAddToAny
 
         var packet = new AmmoAddPacket()
         {
-            Identifiable = NetworkActorManager.GetPersistentID(id),
+            Identifiable = NetworkActorManager.GetPersistentID(metadata.Id),
             Count = 1,
             ID = __instance.GetPlotID(),
         };

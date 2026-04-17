@@ -261,7 +261,7 @@ internal sealed partial class MultiplayerUI
 
         if (string.IsNullOrEmpty(chatInput) && !isChatFocused)
         {
-            var placeholderStyle = new GUIStyle(GUI.skin.textField) { normal = { textColor = Color.gray } };
+            var placeholderStyle = new GUIStyle(){ normal = { textColor = Color.gray } };
             GUI.Label(
                 new Rect(6 + HorizontalSpacing, chatY + ChatHeight - InputHeight - 5, ChatWidth - (HorizontalSpacing * 2), InputHeight),
                 "Press Enter to chat...",

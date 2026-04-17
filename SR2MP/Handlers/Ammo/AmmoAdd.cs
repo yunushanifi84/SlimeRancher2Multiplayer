@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Il2CppMonomiPark.SlimeRancher.Player;
 using SR2MP.Handlers.Internal;
 using SR2MP.Packets.Ammo;
 using SR2MP.Packets.Utils;
@@ -16,7 +17,7 @@ internal sealed class AmmoAddHandler : BasePacketHandler<AmmoAddPacket>
         if (ammo == null) return false;
         var ident = ActorManager.ActorTypes[packet.Identifiable];
         HandlingPacket = true;
-        ammo.MaybeAddToSpecificSlot(ident, null, ammo.GetNextSlot(ident));
+        ammo.MaybeAddToSpecificSlot(new AmmoSlot.AmmoMetadata(ident), ammo.GetNextSlot(ident), packet.Count, false);
         HandlingPacket = false;
 
         return true;

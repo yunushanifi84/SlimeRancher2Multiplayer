@@ -20,7 +20,7 @@ internal sealed partial class NetworkActorManager
         }
 
         var scene = NetworkSceneManager.GetSceneGroup(sceneId);
-        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position);
+        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position, false);
         model.eulerRotation = rotation.eulerAngles;
 
         HandlingPacket = true;
@@ -126,7 +126,7 @@ internal sealed partial class NetworkActorManager
         }
 
         var scene = NetworkSceneManager.GetSceneGroup(sceneId);
-        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position);
+        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position, false);
         model.eulerRotation = rotation.eulerAngles;
 
         identifiableModel = model.TryCast<IdentifiableModel>();
@@ -157,7 +157,7 @@ internal sealed partial class NetworkActorManager
         }
 
         var scene = NetworkSceneManager.GetSceneGroup(sceneId);
-        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position);
+        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position, false);
         model.eulerRotation = rotation.eulerAngles;
 
         identifiableModel = model.Cast<IdentifiableModel>();
@@ -188,7 +188,7 @@ internal sealed partial class NetworkActorManager
         }
 
         var scene = NetworkSceneManager.GetSceneGroup(sceneId);
-        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position).Cast<DroneStationGadgetModel>();
+        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position, false).Cast<DroneStationGadgetModel>();
         model.eulerRotation = rotation.eulerAngles;
         
         model.SetEnergy(SceneContext.Instance.TimeDirector, 0.8333f, actorData.Charge);
@@ -230,7 +230,7 @@ internal sealed partial class NetworkActorManager
         }
 
         var scene = NetworkSceneManager.GetSceneGroup(sceneId);
-        var gadgetModel = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position);
+        var gadgetModel = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position, false);
         gadgetModel.eulerRotation = rotation.eulerAngles;
 
         if (gadgetModel.TryCast<WarpDepotModel>(out var depotModel))
