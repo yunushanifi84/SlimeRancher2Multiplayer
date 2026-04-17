@@ -178,7 +178,7 @@ internal partial class InitialActorsPacket
             Ammo = reader.ReadNetObject<NetworkAmmo>();
         }
     }
-    internal abstract class LinkedGadget : ActorBase
+    internal class LinkedGadget : ActorBase
     {
         public long LinkedActorId;
 

@@ -50,7 +50,7 @@ internal static class NetworkAmmoManager
     public static string? GetPlotID(this AmmoSlot slot)
         => slotToAmmo.TryGetValue(slot.Pointer, out var ammoTuple) ? ammoTuple.ammo.GetPlotID() : null;
 
-    public static int? GetNextSlot(this AmmoSlot slot)
+    public static int? GetSlotIndex(this AmmoSlot slot)
     {
         if (slotToAmmo.TryGetValue(slot.Pointer, out var ammoTuple))
             return ammoTuple.index;

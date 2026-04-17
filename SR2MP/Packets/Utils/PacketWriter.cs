@@ -156,7 +156,7 @@ public sealed class PacketWriter : PacketBuffer
     /// <param name="value">The decimal to write.</param>
     /// <inheritdoc cref="EnsureCapacity"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteDecimal(decimal value) => MemoryMarshal.Write(WriteAlloc(16), in value);
+    public void WriteDecimal(decimal value) => MemoryMarshal.Write(WriteAlloc(16), ref value);
 
     /// <summary>
     /// Writes a Half.
