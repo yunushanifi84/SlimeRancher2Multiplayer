@@ -1,3 +1,6 @@
+using System;
+using UnityEngine;
+
 namespace SR2MP.Components.UI;
 
 internal sealed partial class MultiplayerUI
@@ -7,6 +10,76 @@ internal sealed partial class MultiplayerUI
     private string usernameInput = "Player";
     private bool allowCheatsInput;
 
+    private string activeInputId = string.Empty;
+    private bool suppressNextChar;
+
+    private string DrawSafeTextInput(string id, Rect rect, string value, int maxLength = 64, bool numbersOnly = false)
+    {
+        var e = Event.current;
+        bool focused = activeInputId == id;
+        string displayValue = string.IsNullOrEmpty(value) && !focused ? "Click to type..." : value;
+
+        GUI.Box(rect, focused ? $"> {displayValue}_" : displayValue);
+
+        if (e.type == EventType.MouseDown)
+        {
+            if (rect.Contains(e.mousePosition))
+            {
+                activeInputId = id;
+                suppressNextChar = true;
+                e.Use();
+            }
+            else if (focused)
+            {
+                activeInputId = string.Empty;
+            }
+        }
+
+        if (!focused)
+            return value;
+
+        if (e.type == EventType.KeyDown)
+        {
+            switch (e.keyCode)
+            {
+                case KeyCode.Backspace:
+                    if (!string.IsNullOrEmpty(value))
+                        value = value[..^1];
+                    e.Use();
+                    return value;
+
+                case KeyCode.Return:
+                case KeyCode.KeypadEnter:
+                case KeyCode.Escape:
+                    activeInputId = string.Empty;
+                    e.Use();
+                    return value;
+            }
+
+            if (suppressNextChar)
+            {
+                suppressNextChar = false;
+                e.Use();
+                return value;
+            }
+
+            char c = e.character;
+
+            if (c != '\0' && !char.IsControl(c))
+            {
+                if (!numbersOnly || char.IsDigit(c))
+                {
+                    if (value.Length < maxLength)
+                        value += c;
+                }
+
+                e.Use();
+            }
+        }
+
+        return value;
+    }
+
     private void FirstTimeScreen()
     {
         var valid = true;
@@ -14,7 +87,12 @@ internal sealed partial class MultiplayerUI
         DrawText("Please select an username to play multiplayer.");
 
         DrawText("Username:", 2, 0);
-        usernameInput = GUI.TextField(CalculateInputLayout(6, 2, 1), usernameInput);
+        usernameInput = DrawSafeTextInput(
+            "first_username",
+            CalculateInputLayout(6, 2, 1),
+            usernameInput,
+            24
+        );
 
         if (string.IsNullOrWhiteSpace(usernameInput))
         {
@@ -32,8 +110,15 @@ internal sealed partial class MultiplayerUI
 
     private void SettingsScreen()
     {
+        bool validUsername = true;
+
         DrawText("Username:", 2, 0);
-        usernameInput = GUI.TextField(CalculateInputLayout(6, 2, 1), usernameInput);
+        usernameInput = DrawSafeTextInput(
+            "settings_username",
+            CalculateInputLayout(6, 2, 1),
+            usernameInput,
+            24
+        );
 
         DrawText("Allow Cheats:", 2, 0);
         if (GUI.Button(CalculateButtonLayout(6, 2, 1), allowCheatsInput.ToStringYesOrNo()))
@@ -68,10 +153,63 @@ internal sealed partial class MultiplayerUI
 
         mainTab = DrawMainTabRow("Join", "Host", mainTab);
 
+<<<<<<< HEAD
         if (mainTab == MainTab.Join)
             DrawJoinSection();
         else
             DrawHostSection();
+=======
+        DrawText("IP", 2);
+        ipInput = DrawSafeTextInput(
+            "join_ip",
+            CalculateInputLayout(6, 2, 1),
+            ipInput,
+            64
+        );
+
+        DrawText("Port", 2);
+        portInput = DrawSafeTextInput(
+            "join_port",
+            CalculateInputLayout(6, 2, 1),
+            portInput,
+            5,
+            true
+        );
+
+        var validPort = ushort.TryParse(portInput, out var port);
+        if (validPort)
+        {
+            if (GUI.Button(CalculateButtonLayout(6), "Connect"))
+                Connect(ipInput, port);
+        }
+        else
+        {
+            DrawText("Invalid port: Must be a number from 1 to 65535.");
+        }
+
+        DrawText("Host a world:");
+
+        DrawText("Port", 2);
+        hostPortInput = DrawSafeTextInput(
+            "host_port",
+            CalculateInputLayout(6, 2, 1),
+            hostPortInput,
+            5,
+            true
+        );
+
+        var validHostPort = ushort.TryParse(hostPortInput, out var hostPort);
+        if (validHostPort)
+        {
+            if (GUI.Button(CalculateButtonLayout(6), "Host"))
+                Host(hostPort);
+        }
+        else
+        {
+            DrawText("Invalid port. Must be a number from 1 to 65535.");
+            DrawText("Make sure your pc doesn't use the port anywhere else.");
+        }
+>>>>>>> 42e3aa3 (Add libraries/ to gitignore (local game DLLs))
     }
 
     private void UnimplementedScreen()
