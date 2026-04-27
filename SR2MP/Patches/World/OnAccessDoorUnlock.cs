@@ -6,17 +6,17 @@ using SR2MP.Packets.World;
 
 namespace SR2MP.Patches.World;
 
-[HarmonyPatch(typeof(AccessDoorUIRoot), nameof(AccessDoorUIActivator.OnPurchaseMenuResult))]
+[HarmonyPatch(typeof(AccessDoor), nameof(AccessDoor.CurrState),  MethodType.Setter)]
 internal static class OnAccessDoorUnlock
 {
-    public static void Postfix(AccessDoorUIActivator __instance, UIRuntimeDisplay display, bool result)
+    public static void Postfix(AccessDoor __instance, AccessDoor.State value)
     {
-        if (!result) return;
+        if (HandlingPacket) return;
         
         var packet = new AccessDoorPacket
         {
-            ID = __instance._accessDoor._id,
-            State = AccessDoor.State.OPEN
+            ID = __instance._id,
+            State = value,
         };
         Main.SendToAllOrServer(packet);
     }
