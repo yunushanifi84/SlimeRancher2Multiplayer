@@ -43,6 +43,7 @@
 
     <!-- <EmbeddedResource Include="Resources\*" /> -->
     <EmbeddedResource Include="Bundled\*" />
+    <EmbeddedResource Include="Assets\PlayerMarker.png" />
 
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)\stylecop.json" Link="stylecop.json" Visible="false"/>
   </ItemGroup>

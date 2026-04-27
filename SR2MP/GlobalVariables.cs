@@ -27,6 +27,9 @@ public static class GlobalVariables
     /// </summary>
     public static bool CheatsEnabled { get; internal set; }
 
+    internal static GameObject markerPrefab;
+
+    public static Dictionary<string, GameObject> playerObjects = new();
     /// <summary>
     /// Gets or sets the base Unity GameObject prefab used for instantiating remote players.
     /// </summary>
