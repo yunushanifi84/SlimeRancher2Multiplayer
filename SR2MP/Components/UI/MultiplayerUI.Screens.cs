@@ -1,6 +1,3 @@
-using System;
-using UnityEngine;
-
 namespace SR2MP.Components.UI;
 
 internal sealed partial class MultiplayerUI
@@ -86,13 +83,8 @@ internal sealed partial class MultiplayerUI
 
         DrawText("Please select an username to play multiplayer.");
 
-        DrawText("Username:", 2, 0);
-        usernameInput = DrawSafeTextInput(
-            "first_username",
-            CalculateInputLayout(6, 2, 1),
-            usernameInput,
-            24
-        );
+        DrawText("Username:", 2);
+        usernameInput = GUI.TextField(CalculateInputLayout(6, 2, 1), usernameInput);
 
         if (string.IsNullOrWhiteSpace(usernameInput))
         {
@@ -110,15 +102,10 @@ internal sealed partial class MultiplayerUI
 
     private void SettingsScreen()
     {
-        DrawText("Username:", 2, 0);
-        usernameInput = DrawSafeTextInput(
-            "settings_username",
-            CalculateInputLayout(6, 2, 1),
-            usernameInput,
-            24
-        );
+        DrawText("Username:", 2);
+        usernameInput = GUI.TextField(CalculateInputLayout(6, 2, 1), usernameInput);
 
-        DrawText("Allow Cheats:", 2, 0);
+        DrawText("Allow Cheats:", 2);
         if (GUI.Button(CalculateButtonLayout(6, 2, 1), allowCheatsInput.ToStringYesOrNo()))
             allowCheatsInput = !allowCheatsInput;
 
