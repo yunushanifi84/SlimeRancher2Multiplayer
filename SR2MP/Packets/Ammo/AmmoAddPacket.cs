@@ -6,6 +6,7 @@ internal sealed class AmmoAddPacket : IPacket
 {
     public int Identifiable;
     public int Count;
+    public bool Radiant;
     public string? ID;
 
     public PacketType Type => PacketType.AmmoAdd;
@@ -16,6 +17,7 @@ internal sealed class AmmoAddPacket : IPacket
     {
         writer.WritePackedInt(Identifiable);
         writer.WritePackedInt(Count);
+        writer.WritePackedBool(Radiant);
         writer.WriteString(ID);
     }
 
@@ -23,6 +25,7 @@ internal sealed class AmmoAddPacket : IPacket
     {
         Identifiable = reader.ReadPackedInt();
         Count = reader.ReadPackedInt();
+        Radiant = reader.ReadPackedBool();
         ID = reader.ReadPooledString();
     }
 }

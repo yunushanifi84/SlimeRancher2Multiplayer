@@ -210,29 +210,29 @@ internal static class PacketChunkManager
                 // 13 byte header
 
                 // [0] Packet type
-                masterBuffer[0] = packetType;
+                masterBuffer[masterChunkStart] = packetType;
 
                 // [1-2] Chunk index
-                masterBuffer[1] = (byte)(index & All8Bits);
-                masterBuffer[2] = (byte)((index >> 8) & All8Bits);
+                masterBuffer[masterChunkStart + 1] = (byte)(index & All8Bits);
+                masterBuffer[masterChunkStart + 2] = (byte)((index >> 8) & All8Bits);
 
                 // [3-4] Total chunks
-                masterBuffer[3] = (byte)(chunkCount & All8Bits);
-                masterBuffer[4] = (byte)((chunkCount >> 8) & All8Bits);
+                masterBuffer[masterChunkStart + 3] = (byte)(chunkCount & All8Bits);
+                masterBuffer[masterChunkStart + 4] = (byte)((chunkCount >> 8) & All8Bits);
 
                 // [5-6] Packet ID
-                masterBuffer[5] = (byte)(packetId & All8Bits);
-                masterBuffer[6] = (byte)((packetId >> 8) & All8Bits);
+                masterBuffer[masterChunkStart + 5] = (byte)(packetId & All8Bits);
+                masterBuffer[masterChunkStart + 6] = (byte)((packetId >> 8) & All8Bits);
 
                 // [7] Channel
-                masterBuffer[7] = (byte)channel;
+                masterBuffer[masterChunkStart + 7] = (byte)channel;
 
                 // [8] Reliability
-                masterBuffer[8] = (byte)reliability;
+                masterBuffer[masterChunkStart + 8] = (byte)reliability;
 
                 // [9-10] Sequence number
-                masterBuffer[9] = (byte)(sequenceNumber & All8Bits);
-                masterBuffer[10] = (byte)((sequenceNumber >> 8) & All8Bits);
+                masterBuffer[masterChunkStart + 9] = (byte)(sequenceNumber & All8Bits);
+                masterBuffer[masterChunkStart + 10] = (byte)((sequenceNumber >> 8) & All8Bits);
 
                 // Copy data into buffer at offset HeaderSize, then compute CRC over it
                 sourceToSplit.Slice(chunkOffset, chunkSize).CopyTo(masterBuffer.AsSpan(masterPayloadStart));

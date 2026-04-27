@@ -78,7 +78,20 @@ internal sealed partial class MultiplayerUI
 
         return result;
     }
-
+    
+    private void DrawTabRow(ref byte selected, params string[] labels)
+    {
+        for (byte i = 0; i < labels.Length; i++)
+        {
+            if (GUI.Toggle(CalculateButtonLayout(6, labels.Length, i), selected == i, labels[i], GUI.skin.button))
+            {
+                selected = i;
+                return;
+            }
+        }
+    }
+    
+    [Obsolete("Use DrawTabRow")]
     private MainTab DrawMainTabRow(string leftLabel, string rightLabel, MainTab tab)
     {
         if (GUI.Toggle(CalculateButtonLayout(6, 2), tab == MainTab.Join, leftLabel, GUI.skin.button))
@@ -88,6 +101,7 @@ internal sealed partial class MultiplayerUI
         return tab;
     }
 
+    [Obsolete("Use DrawTabRow")]
     private JoinTab DrawJoinTabRow(string leftLabel, string rightLabel, JoinTab tab)
     {
         if (GUI.Toggle(CalculateButtonLayout(6, 2), tab == JoinTab.Code, leftLabel, GUI.skin.button))
@@ -97,6 +111,7 @@ internal sealed partial class MultiplayerUI
         return tab;
     }
 
+    [Obsolete("Use DrawTabRow")]
     private HostTab DrawHostTabRow(string leftLabel, string middleLabel, string rightLabel, HostTab tab)
     {
         if (GUI.Toggle(CalculateButtonLayout(6, 3), tab == HostTab.Automatic, leftLabel, GUI.skin.button))

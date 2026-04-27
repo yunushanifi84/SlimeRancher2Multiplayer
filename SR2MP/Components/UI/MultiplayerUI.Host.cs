@@ -17,11 +17,11 @@ internal sealed partial class MultiplayerUI
     private void DrawHostSection()
     {
         DrawText("Host a world:");
-        hostTab = DrawHostTabRow("Automatic", "Manual Code", "Manual Simple", hostTab);
+        DrawTabRow(ref hostTab, "Automatic", "Manual Code", "Manual Simple");
 
-        if (hostTab == HostTab.Automatic)
+        if (hostTab == 0)
             DrawHostAutomatic();
-        else if (hostTab == HostTab.ManualCode)
+        else if (hostTab == 1)
             DrawHostManualCode();
         else
             DrawHostManualSimple();
@@ -113,7 +113,7 @@ internal sealed partial class MultiplayerUI
 
     private void DrawHostingJoinCode()
     {
-        if (hostTab == HostTab.ManualSimple)
+        if (hostTab == 2)
         {
             DrawText("Join code unavailable, hosting manually");
             return;

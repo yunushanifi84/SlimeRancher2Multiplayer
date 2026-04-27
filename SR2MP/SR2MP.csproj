@@ -49,8 +49,6 @@
       <Reference Include="Bundled\SharpOpenNat.dll">
           <Private>false</Private>
       </Reference>
-	  
-	  <EmbeddedResource Include="Bundled\THIRD-PARTY-NOTICES.txt" />
     </ItemGroup>
 
     <ItemGroup>

@@ -12,9 +12,9 @@ internal sealed partial class MultiplayerUI
     private void DrawJoinSection()
     {
         DrawText("Join a world:");
-        joinTab = DrawJoinTabRow("Code", "Manual", joinTab);
+        DrawTabRow(ref joinTab, "Code", "Manual");
 
-        if (joinTab == JoinTab.Code)
+        if (joinTab == 0)
             DrawJoinByCode();
         else
             DrawJoinManual();
