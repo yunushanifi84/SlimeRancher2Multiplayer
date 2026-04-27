@@ -194,22 +194,24 @@ internal sealed partial class MultiplayerUI
     {
         if (shouldFocusChat && Event.current.type == EventType.Repaint)
         {
-            GUI.FocusControl(ChatInputName);
+            //GUI.FocusControl(ChatInputName);
             shouldFocusChat = false;
 
             if (!disabledInput)
             {
+                isChatFocused = true;
                 DisableInput();
                 disabledInput = true;
             }
         }
         else if (shouldUnfocusChat)
         {
-            GUI.FocusControl(null);
+            //GUI.FocusControl(null);
             shouldUnfocusChat = false;
 
             if (disabledInput)
             {
+                isChatFocused = false;
                 EnableInput();
                 disabledInput = false;
             }
@@ -219,7 +221,7 @@ internal sealed partial class MultiplayerUI
     private void UpdateChatFocusState()
     {
         var wasPreviouslyFocused = isChatFocused;
-        isChatFocused = GUI.GetNameOfFocusedControl() == ChatInputName;
+        //isChatFocused = !disabledInput;
 
         if (isChatFocused && !wasPreviouslyFocused)
         {
@@ -257,7 +259,7 @@ internal sealed partial class MultiplayerUI
         foreach (var message in chatMessages)
             RenderChatMessage(message);
 
-        GUI.SetNextControlName(ChatInputName);
+        //GUI.SetNextControlName(ChatInputName);
 
         if (string.IsNullOrEmpty(chatInput) && !isChatFocused)
         {
@@ -269,11 +271,7 @@ internal sealed partial class MultiplayerUI
             );
         }
 
-        chatInput = GUI.TextField(
-            new Rect(6 + HorizontalSpacing, chatY + ChatHeight - InputHeight - 5, ChatWidth - (HorizontalSpacing * 2), InputHeight),
-            chatInput,
-            MaxChatMessageLength
-        );
+        chatInput = DrawSafeTextInput("chat_input", CalculateInputLayout(6, 2, 1), chatInput, MaxChatMessageLength);
 
         UpdateChatFocusState();
         ProcessFocusRequests();

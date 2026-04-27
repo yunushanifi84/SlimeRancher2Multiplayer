@@ -27,26 +27,12 @@ internal sealed partial class MultiplayerUI
             DrawHostManualSimple();
     }
 
-    private void DrawHostAutomatic()
-    {
-        if (hostAutoInProgress)
-            DrawText("Attempting UPnP...");
-
-        if (!string.IsNullOrWhiteSpace(hostAutoError))
-            DrawText(hostAutoError);
-
-        GUI.enabled = !hostAutoInProgress;
-        if (GUI.Button(CalculateButtonLayout(6), hostAutoInProgress ? "Starting Server..." : "Start Server"))
-            StartAutoHost();
-        GUI.enabled = true;
-    }
-
     private void DrawHostManualCode()
     {
         DrawText("Tunnel IP:", 2);
-        hostIpInput = GUI.TextField(CalculateInputLayout(6, 2, 1), hostIpInput);
+        hostIpInput = DrawSafeTextInput("host_ip", CalculateInputLayout(6, 2, 1), hostIpInput);
         DrawText("Tunnel Port:", 2);
-        hostPortInput = GUI.TextField(CalculateInputLayout(6, 2, 1), hostPortInput);
+        hostPortInput = DrawSafeTextInput("host_port", CalculateInputLayout(6, 2, 1), hostPortInput);
 
         if (!string.IsNullOrWhiteSpace(hostManualError))
             DrawText(hostManualError);
@@ -72,12 +58,24 @@ internal sealed partial class MultiplayerUI
             DrawText("Invalid port. Must be a number from 1 to 65535.");
         }
     }
+    private void DrawHostAutomatic()
+    {
+        if (hostAutoInProgress)
+            DrawText("Attempting UPnP...");
+
+        if (!string.IsNullOrWhiteSpace(hostAutoError))
+            DrawText(hostAutoError);
+
+        GUI.enabled = !hostAutoInProgress;
+        if (GUI.Button(CalculateButtonLayout(6), hostAutoInProgress ? "Starting Server..." : "Start Server"))
+            StartAutoHost();
+        GUI.enabled = true;
+    }
 
     private void DrawHostManualSimple()
     {
         DrawText("Local Port:", 2);
-        hostPortInput = GUI.TextField(CalculateInputLayout(6, 2, 1), hostPortInput);
-
+        hostPortInput = DrawSafeTextInput("host_port", CalculateInputLayout(6, 2, 1), hostPortInput);
         if (!string.IsNullOrWhiteSpace(hostManualError))
             DrawText(hostManualError);
 
@@ -130,8 +128,7 @@ internal sealed partial class MultiplayerUI
         DrawText("Join code:");
 
         GUI.enabled = false;
-        GUI.TextField(CalculateInputLayout(6), Main.StreamerMode ? "Streamer Mode" : joinCode);
-        GUI.enabled = true;
+        hostPortInput = DrawSafeTextInput("join_code_view", CalculateInputLayout(6, 2, 1), Main.StreamerMode ? "Streamer Mode" : joinCode);
 
         if (GUI.Button(CalculateButtonLayout(6), "Copy Join Code"))
         {

@@ -110,8 +110,6 @@ internal sealed partial class MultiplayerUI
 
     private void SettingsScreen()
     {
-        bool validUsername = true;
-
         DrawText("Username:", 2, 0);
         usernameInput = DrawSafeTextInput(
             "settings_username",

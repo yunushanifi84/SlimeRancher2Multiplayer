@@ -22,8 +22,8 @@ internal sealed partial class MultiplayerUI
 
     private void DrawJoinByCode()
     {
-        DrawText("Join code:");
-        joinCodeInput = GUI.TextField(CalculateInputLayout(6), joinCodeInput);
+        DrawText("Join code:", 2);
+        joinCodeInput = DrawSafeTextInput("join_code", CalculateInputLayout(6, 2, 1), joinCodeInput);
 
         if (!string.IsNullOrWhiteSpace(joinCodeError))
             DrawText(joinCodeError);
@@ -35,11 +35,9 @@ internal sealed partial class MultiplayerUI
     private void DrawJoinManual()
     {
         DrawText("Tunnel IP:", 2);
-        ipInput = GUI.TextField(CalculateInputLayout(6, 2, 1), ipInput);
-
+        ipInput = DrawSafeTextInput("tunnel_ip", CalculateInputLayout(6, 2, 1), ipInput);
         DrawText("Tunnel Port:", 2);
-        portInput = GUI.TextField(CalculateInputLayout(6, 2, 1), portInput);
-
+        portInput = DrawSafeTextInput("tunnel_port", CalculateInputLayout(6, 2, 1), portInput);
         if (!string.IsNullOrWhiteSpace(joinManualError))
             DrawText(joinManualError);
 

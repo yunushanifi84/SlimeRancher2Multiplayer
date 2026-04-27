@@ -168,7 +168,9 @@ internal sealed partial class NetworkActorManager
 
     public static GadgetModel? GetLinkedGadget(GadgetModel model)
         => GameState.identifiables._entries.FirstOrDefault(x =>
-            x.value.ident == model.ident
+            x.value != null &&
+            model != null &&
+            x.value.ident == model?.ident
             && model != x.value
             && (model.ident.Cast<GadgetDefinition>().BuyInPairs 
                 || model.ident.Cast<GadgetDefinition>().LinkedDefinition

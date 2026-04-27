@@ -14,6 +14,8 @@ internal struct ActorSpawnPacket : IPacket
 
     public int ActorType;
     public byte SceneGroup;
+    public SlimeAppearance.AppearanceSaveSet FirstAppearance;
+    public SlimeAppearance.AppearanceSaveSet SecondAppearance;
 
     public readonly PacketType Type => PacketType.ActorSpawn;
     public readonly PacketReliability Reliability => PacketReliability.Reliable;

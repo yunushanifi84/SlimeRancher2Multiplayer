@@ -95,7 +95,7 @@ internal partial class InitialActorsPacket
             Emotions = reader.ReadFloat4();
         }
     }
-    internal sealed class DroneStation : ActorBase
+    internal sealed class DroneStation : LinkedGadget
     {
         public float Charge;
         public DroneType DroneType;

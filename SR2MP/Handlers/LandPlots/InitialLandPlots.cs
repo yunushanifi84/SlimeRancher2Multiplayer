@@ -107,7 +107,7 @@ internal sealed class InitialLandPlotsHandler : BasePacketHandler<InitialLandPlo
                     var ammoType = plot.Type == LandPlot.Id.COOP
                         ? FeederAmmo
                         : PlortCollectorAmmo;
-                    var collectorAmmo = pond.CollectorAmmo.ToGameAmmo();
+                    var collectorAmmo = pond.CollectorAmmo!.ToGameAmmo();
                     model.siloAmmo[ammoType] = collectorAmmo._ammoModel;
 
                     if (!model.gameObj) break;
@@ -168,7 +168,7 @@ internal sealed class InitialLandPlotsHandler : BasePacketHandler<InitialLandPlo
                     break;
 
                 case InitialLandPlotsPacket.IncineratorData incinerator:
-                    var incineratorAmmo = incinerator.PlortCollectorAmmo.ToGameAmmo();
+                    var incineratorAmmo = incinerator.PlortCollectorAmmo!.ToGameAmmo();
                     model.siloAmmo[PlortCollectorAmmo] = incineratorAmmo._ammoModel;
 
                     model.ashUnits = incinerator.AshLevel;

@@ -1,4 +1,5 @@
 using Il2CppMonomiPark.SlimeRancher.DataModel;
+using Il2CppMonomiPark.SlimeRancher.Drone;
 using Il2CppMonomiPark.SlimeRancher.Player;
 using SR2MP.Packets.Actor;
 using SR2MP.Packets.Ammo;
@@ -26,7 +27,7 @@ internal sealed partial class NetworkActorManager
     public static InitialActorsPacket.ActorBase CreateInitialGadget(GadgetModel gadget)
     {
         if (gadget.TryCast<DroneStationGadgetModel>(out var drone))
-            
+            return CreateInitialDroneStation(gadget.Cast<DroneStationGadgetModel>());
         
         if (GetLinkedGadget(gadget) != null)
         {
@@ -73,7 +74,11 @@ internal sealed partial class NetworkActorManager
             Sink = model._taskData.SinkType,
             Target = model._taskData.TargetType,
             Source = model._taskData.SourceType,
-        }
+        },
+        
+        LinkedActorId = model._type == DroneType.EXPLORER_DRONE
+            ? GameState.droneModel.GetExplorerDrone(model.actorId).actorId.Value 
+            : GameState.droneModel.GetRanchDrone(model.actorId).actorId.Value
     };
 
     private static InitialActorsPacket.Slime CreateInitialSlime(SlimeModel model) => new()
@@ -93,7 +98,7 @@ internal sealed partial class NetworkActorManager
         Position = model.lastPosition,
         Rotation = model.GetRot(),
         Scene = NetworkSceneManager.GetPersistentID(model.sceneGroup),
-        LinkedActorId = GetLinkedGadget(model).actorId.Value
+        LinkedActorId = GetLinkedGadget(model)!.actorId.Value
     };
     
     private static InitialActorsPacket.LinkedAmmoGadget CreateInitialAmmoGadget(GadgetModel model) => new()

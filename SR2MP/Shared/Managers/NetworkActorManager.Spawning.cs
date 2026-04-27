@@ -102,16 +102,18 @@ internal sealed partial class NetworkActorManager
 
     private bool TrySpawnInitialGadget(InitialActorsPacket.ActorBase actorData, out IdentifiableModel? identifiableModel)
     {
+        identifiableModel = null;
+        if (ActorIDAlreadyInUse(new ActorId(actorData.ActorId)))
+            return false;
         switch (actorData)
         {
+            case InitialActorsPacket.DroneStation stationData:
+                return TrySpawnInitialDroneStation(stationData, out identifiableModel);
             case InitialActorsPacket.LinkedAmmoGadget linkedAmmoData:
                 return TrySpawnInitialAmmoGadget(linkedAmmoData, out identifiableModel);
             case InitialActorsPacket.LinkedGadget linkedData: // i dont know how to set this up for linked gadgets to work, but its possible they auto work
                 return TrySpawnInitialLinkedGadget(linkedData, out identifiableModel);
-            case InitialActorsPacket.DroneStation stationData:
-                return TrySpawnInitialDroneStation(stationData, out identifiableModel);
         }
-        identifiableModel = null;
 
         var sceneId = actorData.Scene;
         var actorId = new ActorId(actorData.ActorId);
@@ -188,28 +190,40 @@ internal sealed partial class NetworkActorManager
         }
 
         var scene = NetworkSceneManager.GetSceneGroup(sceneId);
-        var model = GameState.CreateGadgetModel(type.Cast<GadgetDefinition>(), actorId, scene, position, false).Cast<DroneStationGadgetModel>();
-        model.eulerRotation = rotation.eulerAngles;
-        
-        model.SetEnergy(SceneContext.Instance.TimeDirector, 0.8333f, actorData.Charge);
-        model.IsDroneAtStation._value = actorData.DroneInStation;
-        model._type = actorData.DroneType;
-        model._taskData = new DroneTaskData()
+        var droneModel = new DroneStationGadgetModel(actorId, type, scene, position, false);
+        droneModel.eulerRotation = rotation.eulerAngles;
+        droneModel.SetEnergy(SceneContext.Instance.TimeDirector, 0.8333f, actorData.Charge);
+        droneModel.IsDroneAtStation._value = actorData.DroneInStation;
+        droneModel._type = actorData.DroneType;
+        droneModel._taskData = new DroneTaskData()
         {
             SinkType = actorData.Task.Sink,
             SourceType = actorData.Task.Source,
             TargetType = actorData.Task.Target,
             TargetIdentType = ActorTypes[actorData.Task.TargetIdent],
         };
+
+        if (droneModel._type == DroneType.RANCH_DRONE)
+        {
+            droneModel.InitializeForRancher(SceneContext.Instance.DroneDirector);
+            GameState.droneModel._ranchDrones[actorId] = GameState.GetIdentifiableModel(new ActorId(actorData.LinkedActorId)).Cast<RanchDroneModel>();
+        }
+        else
+        {   
+            droneModel.InitializeForExplorer(SceneContext.Instance.DroneDirector, SceneContext.Instance.TimeDirector, SceneContext.Instance.DroneDirector.GetStationAreaResources(droneModel));
+            GameState.droneModel._explorerDrones[actorId] = GameState.GetIdentifiableModel(new ActorId(actorData.LinkedActorId)).Cast<ExplorerDroneModel>();
+        }       
+        droneModel.Initialized = true;
         
-        identifiableModel = model.Cast<IdentifiableModel>();
+        identifiableModel = droneModel.Cast<IdentifiableModel>();
         
         HandlingPacket = true;
-        var gadget = GadgetDirector.InstantiateGadgetFromModel(model.Cast<GadgetModel>());
+        var gadget = GadgetDirector.InstantiateGadgetFromModel(droneModel.Cast<GadgetModel>());
         HandlingPacket = false;
+        gadget.GetComponent<DroneStation>().SetModel(droneModel.Cast<GadgetModel>());
         
         gadget.transform.SetPositionAndRotation(position, rotation);
-        
+        SrLogger.LogWarning($"DEBUG: Spawning drone station;\n\tGadget Id: {actorId}\n\tDrone Id: {new ActorId(actorData.LinkedActorId)}\n\tBattery: {actorData.Charge}\n\tType: {actorData.DroneType}\n\tDrone Task:\n\t\tSink: {actorData.Task.Sink}\n\t\tSource: {actorData.Task.Source}\n\t\tTarget: {actorData.Task.Target}");
         return true;
     }
     

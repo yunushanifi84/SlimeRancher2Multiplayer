@@ -82,13 +82,8 @@ internal sealed partial class MultiplayerUI
     private void DrawTabRow(ref byte selected, params string[] labels)
     {
         for (byte i = 0; i < labels.Length; i++)
-        {
             if (GUI.Toggle(CalculateButtonLayout(6, labels.Length, i), selected == i, labels[i], GUI.skin.button))
-            {
                 selected = i;
-                return;
-            }
-        }
     }
     
     [Obsolete("Use DrawTabRow")]
