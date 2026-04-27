@@ -98,7 +98,6 @@ internal sealed partial class MultiplayerUI
 
         DrawText("Username:", 2);
         usernameInput = DrawSafeTextInput("username", CalculateInputLayout(6, 2, 1), usernameInput, 32);
-        usernameInput = GUI.TextField(CalculateInputLayout(6, 2, 1), usernameInput);
 
         if (string.IsNullOrWhiteSpace(usernameInput))
         {
