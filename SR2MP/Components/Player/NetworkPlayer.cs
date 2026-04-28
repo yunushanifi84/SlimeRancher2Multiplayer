@@ -195,6 +195,8 @@ internal partial class NetworkPlayer : MonoBehaviour
 
         UpdateGadgetMode();
 
+        UpdateMarker();
+        
         if (transformTimer >= 0f)
             return;
 

@@ -29,11 +29,19 @@ internal partial class NetworkPlayer
 
     private void UpdateMarker()
     {
-        var marker = PlayerMarkerTransforms[ID];
-        if (!marker.mainMarker || !marker.markerArrow)
+        if (IsLocal) return;
+        
+        if (!PlayerMarkerTransforms.TryGetValue(ID, out var marker))
         {
-            
+            //SrLogger.LogMessage($"Player ({ID}) marker not found!");
+            return;
         }
+        
+        if (!marker.mainMarker || !marker.markerArrow)
+            return;
+        
+        marker.mainMarker!.localPosition = new Vector3(transform.position.x, transform.position.z, 0);
+        marker.markerArrow!.eulerAngles = new Vector3(0, 0, -transform.eulerAngles.y);
     }
     //private bool IsMapMarkerActive
     //private Vector3 MapPosition

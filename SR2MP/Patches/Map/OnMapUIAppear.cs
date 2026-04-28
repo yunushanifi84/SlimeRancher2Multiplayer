@@ -32,6 +32,8 @@ internal class OnMapUIAppear
 
             markerInstance.GetComponent<MapFader>()._targetOpacity = 100;
 
+            
+            
             var textObject = new GameObject("PlayerName")
             {
                 transform =
@@ -44,12 +46,18 @@ internal class OnMapUIAppear
             
             var textComponent = textObject.AddComponent<TextMeshProUGUI>();
             textComponent.SetText(player.Username);
-            textComponent.alpha = 0.4f;
+            textComponent.alpha = 0.6f;
             textComponent.alignment = TextAlignmentOptions.Center;
             textComponent.font = PlayerObjects[player.PlayerId].GetComponent<NetworkPlayer>().usernameFont;
+            textComponent.overflowMode = TextOverflowModes.Overflow;
+            textComponent.enableWordWrapping = false;
             
             var facingArrow = markerInstance.transform.FindChild("FacingFrame");
             facingArrow.FindChild("FacingArrow").GetComponent<Image>().m_Color = RemotePlayerManager.GetPlayerColor(player);
+            
+            var markerTransformGroup = PlayerMarkerTransforms[player.PlayerId];
+            markerTransformGroup.mainMarker = markerInstance.transform;
+            markerTransformGroup.markerArrow = facingArrow.transform;
         }
     }
 }

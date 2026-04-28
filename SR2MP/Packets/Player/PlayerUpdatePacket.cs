@@ -41,7 +41,7 @@ internal sealed class PlayerUpdatePacket : IPacket
         writer.WritePackedBool(Moving);
         writer.WritePackedBool(Sprinting);
         
-        writer.WritePackedInt(SceneGroup);
+        writer.WriteInt(SceneGroup);
     }
 
     public void Deserialise(PacketReader reader)
@@ -63,6 +63,6 @@ internal sealed class PlayerUpdatePacket : IPacket
         Moving = reader.ReadPackedBool();
         Sprinting = reader.ReadPackedBool();
 
-        SceneGroup = reader.ReadPackedInt();
+        SceneGroup = reader.ReadInt();
     }
 }
