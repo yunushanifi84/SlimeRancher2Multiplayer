@@ -134,7 +134,7 @@ public sealed class RemotePlayerManager
     /// <param name="player">The network player to get the color from.</param>
     public static Color GetPlayerColor(RemotePlayer player)
     {
-        var hash = HashCalculator.ComputeHashOfString(player.PlayerId.Replace("PLAYER_", ""));
+        var hash = player.PlayerId.Replace("PLAYER_", "").Hash32();
         Main.modRandomization.Reseed((int)hash);
         var random = Main.modRandomization;
         return new Color32(

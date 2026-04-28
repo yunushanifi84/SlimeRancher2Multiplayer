@@ -39,7 +39,15 @@ internal static class HashCalculator
         }
     }
 
-    public static ushort Hash(this string defName)
+    public static uint Hash32(this string defName)
+    {
+        uint number = uint.MaxValue;
+        foreach (var c in defName)
+            number = ((number << 11) + number + c);
+        return number;
+    }
+
+    public static ushort Hash16(this string defName)
     {
         ushort number = 65535;
         foreach (var c in defName)

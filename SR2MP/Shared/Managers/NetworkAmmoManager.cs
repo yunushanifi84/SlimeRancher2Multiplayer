@@ -20,7 +20,7 @@ internal static class NetworkAmmoManager
         // so they are probably just stored where they are used only.
         // -PinkTarr
         foreach (var def in Resources.FindObjectsOfTypeAll<AmmoSlotDefinition>())
-            slotDefinitions[def.name.Hash()] = def;
+            slotDefinitions[def.name.Hash16()] = def;
     }
 
     public static int GetNextSlot(this AmmoSlotManager ammo, IdentifiableType id)
@@ -117,7 +117,7 @@ internal static class NetworkAmmoManager
 
     public static ushort GetId(AmmoSlotDefinition def)
     {
-        var hash = def.name.Hash();
+        var hash = def.name.Hash16();
         slotDefinitions.TryAdd(hash, def);
         return hash;
     }
