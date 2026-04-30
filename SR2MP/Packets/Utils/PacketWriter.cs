@@ -188,7 +188,11 @@ public sealed class PacketWriter : PacketBuffer
         span[3] = value.a;
     }
 
-    private void WriteFloats(ReadOnlySpan<float> values)
+    /// <summary>
+    /// Writes a span of floats.
+    /// </summary>
+    /// <param name="values">The span to write.</param>
+    public void WriteFloats(ReadOnlySpan<float> values)
     {
         var span = WriteAlloc(values.Length * 4);
 

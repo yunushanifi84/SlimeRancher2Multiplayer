@@ -195,3 +195,6 @@ dotnet_diagnostic.S3358.severity = none
 
 # S2696: Instance members should not write to "static" fields
 dotnet_diagnostic.S2696.severity = none
+
+# S2190: Loops and recursions should not be infinite
+dotnet_diagnostic.S2190.severity = none

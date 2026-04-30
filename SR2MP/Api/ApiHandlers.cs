@@ -127,6 +127,9 @@ public static class ApiHandlers
     /// <remarks>If you have a special way to serialise a value that's already registered or supported natively, it's recommended that you create a simple wrapper struct or INetObject and serialise that instead!</remarks>
     public static void RegisterCustomTypeSerialisation<T>(Func<PacketReader, T> reader, Action<PacketWriter, T> writer)
     {
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(writer);
+
         var type = typeof(T);
 
         if (type.IsEnum || typeof(INetObject).IsAssignableFrom(type) || typeof(ITuple).IsAssignableFrom(type))

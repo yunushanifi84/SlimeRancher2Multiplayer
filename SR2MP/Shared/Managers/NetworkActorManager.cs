@@ -8,8 +8,8 @@ namespace SR2MP.Shared.Managers;
 
 internal sealed partial class NetworkActorManager
 {
-    public readonly Dictionary<long, IdentifiableModel> Actors    = new();
-    public readonly Dictionary<int, IdentifiableType> ActorTypes  = new();
+    public readonly Dictionary<long, IdentifiableModel> Actors   = new();
+    public readonly Dictionary<int, IdentifiableType> ActorTypes = new();
 
     public static int GetPersistentID(IdentifiableType type)
         => GameContext.Instance.AutoSaveDirector._saveReferenceTranslation.GetPersistenceId(type);
