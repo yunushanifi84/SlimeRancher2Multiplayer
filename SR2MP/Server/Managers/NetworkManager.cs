@@ -128,7 +128,7 @@ internal sealed class NetworkManager
                 reliabilityManager?.TrackPacket(splitResult, endPoint, packetId, data[0], packetReliability);
 
             for (var i = 0; i < splitResult.Count; i++)
-                SendRaw(splitResult.GetChunk(i), endPoint);
+                SendRaw(splitResult.Chunks[i], endPoint);
 
             if (!packetReliability.HasFlag(PacketReliability.Reliable))
                 splitResult.Dispose();
@@ -168,7 +168,7 @@ internal sealed class NetworkManager
                     reliabilityManager?.TrackPacket(splitResult, endPoint.EndPoint, packetId, data[0], packetReliability);
 
                 for (var i = 0; i < splitResult.Count; i++)
-                    SendRaw(splitResult.GetChunk(i), endPoint.EndPoint);
+                    SendRaw(splitResult.Chunks[i], endPoint.EndPoint);
             }
 
             if (packetReliability == PacketReliability.Unreliable)

@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using SR2MP.Client.Models;
 using SR2MP.Packets.Player;
+using SR2MP.Shared.Utils;
+using Random = UnityEngine.Random;
 
 namespace SR2MP.Shared.Managers;
 
@@ -55,7 +57,8 @@ public sealed class RemotePlayerManager
         float horizontalSpeed = 0f,
         float forwardSpeed = 0f,
         bool sprinting = false,
-        float lookY = 0f)
+        float lookY = 0f,
+        int sceneGroup = 1)
     {
         var playerId = Main.Client.IsConnected ? Main.Client.PlayerId : (Main.Server.IsRunning ? Main.Server.PlayerId : string.Empty);
         var updatePacket = new PlayerUpdatePacket
@@ -123,5 +126,21 @@ public sealed class RemotePlayerManager
         }
 
         SrLogger.LogMessage("All remote players cleared!");
+    }
+
+    /// <summary>
+    /// Gets a player color that is good for ui. Each value in RGB has a minimum of 70.
+    /// </summary>
+    /// <param name="player">The network player to get the color from.</param>
+    public static Color GetPlayerColor(RemotePlayer player)
+    {
+        var hash = player.PlayerId.Replace("PLAYER_", "").Hash32();
+        Main.modRandomization.Reseed((int)hash);
+        var random = Main.modRandomization;
+        return new Color32(
+            (byte)random.GetInRange(70, 255),
+            (byte)random.GetInRange(70, 255),
+            (byte)random.GetInRange(70, 255),
+            255);
     }
 }

@@ -44,18 +44,7 @@ internal sealed partial class MultiplayerUI
         {
             switch (current.keyCode)
             {
-                case KeyCode.V:
-                    if (current.control)
-                        value += GUIUtility.systemCopyBuffer;
-                    return value;
-                case KeyCode.C:
-                    if (current.control)
-                        GUIUtility.systemCopyBuffer = value;
-                    return value;
-                case KeyCode.X:
-                    if (current.control)
-                        GUIUtility.systemCopyBuffer = value;
-                    return "";
+                
                 
                 case KeyCode.Backspace:
                     if (!string.IsNullOrEmpty(value))
@@ -69,6 +58,28 @@ internal sealed partial class MultiplayerUI
                     activeInputId = string.Empty;
                     current.Use();
                     return value;
+                
+                case KeyCode.X:
+                    if (current.control)
+                    {
+                        GUIUtility.systemCopyBuffer = value; 
+                        return "";
+                    }
+                    break;
+                case KeyCode.V:
+                    if (current.control)
+                    {
+                        value += GUIUtility.systemCopyBuffer;
+                        return value;
+                    }
+                    break;
+                case KeyCode.C:
+                    if (current.control)
+                    {
+                        GUIUtility.systemCopyBuffer = value;
+                        return value;
+                    }
+                    break;
             }
 
             if (suppressNextChar)

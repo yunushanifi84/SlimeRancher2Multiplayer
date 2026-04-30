@@ -299,7 +299,7 @@ public sealed class SR2MPClient
                 reliabilityManager?.TrackPacket(splitResult, serverEndPoint, packetId, data[0], reliability);
 
             for (var i = 0; i < splitResult.Count; i++)
-                SendRaw(splitResult.GetChunk(i), serverEndPoint);
+                SendRaw(splitResult.Chunks[i], serverEndPoint);
 
             if (!reliability.HasFlag(PacketReliability.Reliable))
                 splitResult.Dispose();

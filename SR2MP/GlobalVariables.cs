@@ -1,6 +1,8 @@
 using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.UI;
+using SR2MP.Components.Player;
 using SR2MP.Shared.Managers;
+using SR2MP.Shared.Utils;
 using PriceDictionary = Il2CppSystem.Collections.Generic.Dictionary<Il2Cpp.IdentifiableType, Il2CppMonomiPark.SlimeRancher.Economy.PlortEconomyDirector.CurrValueEntry>;
 
 namespace SR2MP;
@@ -28,12 +30,22 @@ public static class GlobalVariables
     public static bool CheatsEnabled { get; internal set; }
 
     /// <summary>
+    /// Gets or sets the Unity GameObject prefab used for the <see cref="NetworkPlayer"/> compass marker.
+    /// </summary>
+    public static GameObject PlayerCompassPrefab  { get; internal set; }
+    /// <summary>
+    /// Gets or sets the Unity GameObject prefab used for the <see cref="NetworkPlayer"/> map marker.
+    /// </summary>
+    public static GameObject PlayerMapPrefab  { get; internal set; }
+
+    public static Dictionary<string, GameObject> playerObjects = new();
+    /// <summary>
     /// Gets or sets the base Unity GameObject prefab used for instantiating remote players.
     /// </summary>
     public static GameObject PlayerPrefab { get; internal set; }
 
     internal static readonly Dictionary<string, GameObject> PlayerObjects = new();
-
+    
     /// <summary>
     /// The core manager responsible for tracking and handling remote players.
     /// </summary>
@@ -105,4 +117,6 @@ public static class GlobalVariables
     /// Gets the current game state model from the active scene context.
     /// </summary>
     public static GameModel GameState => SceneContext.Instance.GameModel;
+    
+    internal static readonly Dictionary<string, MarkerTransform> PlayerMarkerTransforms = new();
 }

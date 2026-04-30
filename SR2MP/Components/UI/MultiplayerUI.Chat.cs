@@ -271,7 +271,16 @@ internal sealed partial class MultiplayerUI
             );
         }
 
-        chatInput = DrawSafeTextInput("chat_input", CalculateInputLayout(6, 2, 1), chatInput, MaxChatMessageLength);
+        chatInput = DrawSafeTextInput(
+            "chat_input",
+            new Rect(
+                6 + HorizontalSpacing,
+                chatY + ChatHeight - InputHeight - 5, 
+                ChatWidth - (HorizontalSpacing * 2),
+                InputHeight
+                ),
+            chatInput,
+            MaxChatMessageLength);
 
         UpdateChatFocusState();
         ProcessFocusRequests();

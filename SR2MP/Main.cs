@@ -4,6 +4,7 @@ using MelonLoader;
 using MelonLoader.Utils;
 using SR2E.Expansion;
 using SR2MP.Client;
+using SR2E.Utils;
 using SR2MP.Components.FX;
 using SR2MP.Components.Player;
 using SR2MP.Components.Time;
@@ -12,6 +13,9 @@ using SR2MP.Packets.Utils;
 using SR2MP.Server;
 using SR2MP.Shared.Managers;
 using SR2MP.Shared.Utils;
+using SR2MP.Client;
+using SR2MP.Server;
+using UnityEngine.UI;
 
 namespace SR2MP;
 
@@ -20,6 +24,10 @@ namespace SR2MP;
 /// </summary>
 public sealed class Main : SR2EExpansionV3
 {
+    /// <summary>
+    /// The random parts of the mod. Please pass in a seed that can be the same between clients before attempting to randomize.
+    /// </summary>
+    public static Randoms modRandomization = new(); 
     /// <summary>
     /// Gets the active multiplayer client instance.
     /// </summary>
@@ -256,5 +264,33 @@ public sealed class Main : SR2EExpansionV3
         PlayerPrefab.AddComponent<NetworkPlayerFootstep>().SpawnAtTransform = footstepFX.transform;
 
         Object.DontDestroyOnLoad(PlayerPrefab);
+        
+        PlayerCompassPrefab = new GameObject("PlayerCompassMarker");
+        PlayerCompassPrefab.SetActive(false);
+        PlayerCompassPrefab.transform.localPosition = Vector3.zero;
+        PlayerCompassPrefab.transform.localRotation = Quaternion.identity;
+        PlayerCompassPrefab.transform.localScale = Vector3.one;
+        PlayerCompassPrefab.AddComponent<Image>().sprite = EmbeddedResourceEUtil.LoadSprite("Assets.PlayerMarker.png").CopyWithoutMipmaps();
+        var rectTransform = PlayerCompassPrefab.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0.5f, 0.0f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.0f);
+        rectTransform.sizeDelta = new Vector2Int(32, 32);
+        PlayerMapPrefab = Object.Instantiate(PlayerCompassPrefab);
+        PlayerMapPrefab.name = "PlayerMapMarker";
+        var label = new GameObject("NameLabel")
+        {
+            transform =
+            {
+                parent = PlayerCompassPrefab.transform,
+                localPosition = Vector3.down * 40f,
+                localScale = Vector3.one * 0.585f
+            }
+        };
+        var gui = label.AddComponent<TextMeshProUGUI>();
+        gui.alignment = TextAlignmentOptions.Center;
+        gui.font = GetFont("Runsell Type - HemispheresCaps2 (Latin)");
+        
+        Object.DontDestroyOnLoad(PlayerCompassPrefab);
     }
+    private static TMP_FontAsset GetFont(string fontName) => Resources.FindObjectsOfTypeAll<TMP_FontAsset>().FirstOrDefault(x => x.name == fontName)!;
 }

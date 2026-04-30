@@ -262,7 +262,7 @@ internal sealed class ReliabilityManager
                     if (now - packet.LastSendTime > ResendInterval)
                     {
                         for (var i = 0; i < packet.SplitData.Count; i++)
-                            sendRawCallback(packet.SplitData.GetChunk(i), packet.Destination);
+                            sendRawCallback(packet.SplitData.Chunks[i], packet.Destination);
 
                         packet.LastSendTime = now;
                         packet.SendCount++;

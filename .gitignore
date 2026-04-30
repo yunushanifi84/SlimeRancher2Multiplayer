@@ -411,6 +411,7 @@ FodyWeavers.xsd
 *.png
 *.ttf
 
+/SR2MP/Assets/PlayerMarker.xcf
 /SR2MP/Patches/Private
 ExternalAnnotations/
 .vscode/
