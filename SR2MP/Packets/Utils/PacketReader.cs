@@ -211,12 +211,16 @@ public sealed class PacketReader : PacketBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ulong ReadPackedULong() => ReadVarInt(70);
 
-    private void ReadFloats(Span<float> values)
+    /// <summary>
+    /// Reads floats to a span.
+    /// </summary>
+    /// <param name="destination">The destination span to allot the floats to.</param>
+    public void ReadFloats(Span<float> destination)
     {
-        var span = ReadRequest(values.Length * 4);
+        var span = ReadRequest(destination.Length * 4);
 
-        for (var i = 0; i < values.Length; i++)
-            values[i] = BinaryPrimitives.ReadSingleLittleEndian(span[(i * 4)..]);
+        for (var i = 0; i < destination.Length; i++)
+            destination[i] = BinaryPrimitives.ReadSingleLittleEndian(span[(i * 4)..]);
     }
 
     /// <summary>

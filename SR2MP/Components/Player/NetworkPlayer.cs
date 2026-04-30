@@ -1,3 +1,5 @@
+#pragma warning disable S125 // Sections of code should not be commented out
+
 using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
 using Il2CppMonomiPark.SlimeRancher.Player.PlayerItems;
 using Il2CppTMPro;

@@ -156,7 +156,7 @@ public sealed class PacketWriter : PacketBuffer
     /// <param name="value">The decimal to write.</param>
     /// <inheritdoc cref="EnsureCapacity"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteDecimal(decimal value) => MemoryMarshal.Write(WriteAlloc(16), in value);
+    public void WriteDecimal(decimal value) => MemoryMarshal.Write(WriteAlloc(16), ref value);
 
     /// <summary>
     /// Writes a Half.
@@ -188,7 +188,11 @@ public sealed class PacketWriter : PacketBuffer
         span[3] = value.a;
     }
 
-    private void WriteFloats(ReadOnlySpan<float> values)
+    /// <summary>
+    /// Writes a span of floats.
+    /// </summary>
+    /// <param name="values">The span to write.</param>
+    public void WriteFloats(ReadOnlySpan<float> values)
     {
         var span = WriteAlloc(values.Length * 4);
 
