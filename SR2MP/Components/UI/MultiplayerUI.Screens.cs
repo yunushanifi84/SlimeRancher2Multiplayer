@@ -8,16 +8,21 @@ internal sealed partial class MultiplayerUI
     private bool allowCheatsInput;
 
     private string activeInputId = string.Empty;
+    private bool justUnfocusedInput;
     private bool suppressNextChar;
-    
+
     private string DrawSafeTextInput(string id, Rect rect, string value, int maxLength = 64, bool numbersOnly = false, bool isChat = false)
     {
         var current = Event.current;
-        var displayValue = string.IsNullOrEmpty(value) && activeInputId != id ? isChat ? "Enter to Chat" : "Click to Type" : value;
+        var displayValue = string.IsNullOrEmpty(value) && activeInputId != id
+            ? (isChat ? "Enter to Chat" : "Click to Type")
+            : value;
 
         if (activeInputId == id)
             GUI.skin.box.normal.textColor = SelectedTextColor;
+
         GUI.Box(rect, displayValue);
+
         GUI.skin.box.normal.textColor = Color.white;
 
         if (current.type == EventType.MouseDown)
@@ -46,34 +51,47 @@ internal sealed partial class MultiplayerUI
                         value = value[..^1];
                     current.Use();
                     return value;
-
+                
                 case KeyCode.Return:
                 case KeyCode.KeypadEnter:
+                    if (!isChat)
+                    {
+                        activeInputId = string.Empty;
+                        justUnfocusedInput = true;
+                        current.Use();
+                    }
+                    return value;
+
                 case KeyCode.Escape:
                     activeInputId = string.Empty;
                     current.Use();
                     return value;
-                
+
                 case KeyCode.X:
                     if (current.control)
                     {
-                        GUIUtility.systemCopyBuffer = value; 
+                        GUIUtility.systemCopyBuffer = value;
                         return "";
                     }
+
                     break;
+
                 case KeyCode.V:
                     if (current.control)
                     {
                         value += GUIUtility.systemCopyBuffer;
                         return value;
                     }
+
                     break;
+
                 case KeyCode.C:
                     if (current.control)
                     {
                         GUIUtility.systemCopyBuffer = value;
                         return value;
                     }
+
                     break;
             }
 
@@ -84,7 +102,9 @@ internal sealed partial class MultiplayerUI
                 return value;
             }
 
-            if (current.character == '\0' || char.IsControl(current.character)) return value;
+            if (current.character == '\0' || char.IsControl(current.character))
+                return value;
+
             if ((!numbersOnly || char.IsDigit(current.character)) && value.Length < maxLength)
             {
                 value += current.character;

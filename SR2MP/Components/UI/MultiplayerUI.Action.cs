@@ -132,13 +132,6 @@ internal sealed partial class MultiplayerUI
         // TODO: Implement kick functionality
     }
 
-    private void Update()
-    {
-        HandleUIToggle();
-        HandleChatToggle();
-        HandleChatInput();
-    }
-
     private static void DisableInput() =>
         GameContext.Instance.InputDirector._mainGame.Map.Disable();
 
@@ -170,30 +163,45 @@ internal sealed partial class MultiplayerUI
 
     private void HandleChatInput()
     {
-        if (chatHidden || state == MenuState.DisconnectedMainMenu) return;
+        if (chatHidden || state == MenuState.DisconnectedMainMenu)
+            return;
+
+        if (justUnfocusedInput)
+        {
+            justUnfocusedInput = false;
+            return;
+        }
 
         var enterPressed = KeyCode.Return.OnKeyDown() || KeyCode.KeypadEnter.OnKeyDown();
         var escapePressed = KeyCode.Escape.OnKeyDown();
 
-        if (isChatFocused)
-        {
-            if (enterPressed)
-            {
-                if (!string.IsNullOrWhiteSpace(chatInput))
-                    SendChatMessage(chatInput.Trim());
+        if (!string.IsNullOrEmpty(activeInputId) && activeInputId != "chat_input")
+            return;
 
-                ClearChatInput();
-                UnfocusChat();
-            }
-            else if (escapePressed)
-            {
-                ClearChatInput();
-                UnfocusChat();
-            }
-        }
-        else if (enterPressed)
+        if (!isChatFocused && enterPressed)
         {
             FocusChat();
+            activeInputId = "chat_input";
+            return;
+        }
+
+        if (!isChatFocused)
+            return;
+
+        if (enterPressed)
+        {
+            if (!string.IsNullOrWhiteSpace(chatInput))
+                SendChatMessage(chatInput.Trim());
+
+            ClearChatInput();
+            UnfocusChat();
+            activeInputId = string.Empty;
+        }
+        else if (escapePressed)
+        {
+            ClearChatInput();
+            UnfocusChat();
+            activeInputId = string.Empty;
         }
     }
 

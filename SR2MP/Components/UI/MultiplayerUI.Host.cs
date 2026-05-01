@@ -58,6 +58,7 @@ internal sealed partial class MultiplayerUI
             DrawText("Invalid port. Must be a number from 1 to 65535.");
         }
     }
+
     private void DrawHostAutomatic()
     {
         if (hostAutoInProgress)
@@ -76,6 +77,7 @@ internal sealed partial class MultiplayerUI
     {
         DrawText("Local Port:", 2);
         hostPortInput = DrawSafeTextInput("host_port", CalculateInputLayout(6, 2, 1), hostPortInput);
+
         if (!string.IsNullOrWhiteSpace(hostManualError))
             DrawText(hostManualError);
 
@@ -128,7 +130,8 @@ internal sealed partial class MultiplayerUI
         DrawText("Join code:");
 
         GUI.enabled = false;
-        hostPortInput = DrawSafeTextInput("join_code_view", CalculateInputLayout(6, 2, 1), Main.StreamerMode ? "Streamer Mode" : joinCode);
+        DrawSafeTextInput("join_code_view", CalculateInputLayout(6, 2, 1), Main.StreamerMode ? "Streamer Mode" : joinCode);
+        GUI.enabled = true;
 
         if (GUI.Button(CalculateButtonLayout(6), "Copy Join Code"))
         {

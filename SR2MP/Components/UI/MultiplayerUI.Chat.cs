@@ -12,8 +12,6 @@ internal sealed partial class MultiplayerUI
 
     private string chatInput = string.Empty;
     private bool isChatFocused;
-    private bool wasChatFocused;
-    private const string ChatInputName = "ChatInput";
 
     private bool shouldUnfocusChat;
     private bool internalChatToggle;
@@ -63,7 +61,9 @@ internal sealed partial class MultiplayerUI
 
             if (processedMessageIds.Count <= 1000) return;
 
-            foreach (var id in processedMessageIds.Take(500))
+            // Snapshot to avoid mutating the set while iterating
+            var toRemove = processedMessageIds.Take(500).ToList();
+            foreach (var id in toRemove)
                 processedMessageIds.Remove(id);
         });
     }
@@ -199,6 +199,7 @@ internal sealed partial class MultiplayerUI
             if (!disabledInput)
             {
                 isChatFocused = true;
+                activeInputId = "chat_input";
                 DisableInput();
                 disabledInput = true;
             }
@@ -210,34 +211,11 @@ internal sealed partial class MultiplayerUI
             if (disabledInput)
             {
                 isChatFocused = false;
+                activeInputId = string.Empty;
                 EnableInput();
                 disabledInput = false;
             }
         }
-    }
-
-    private void UpdateChatFocusState()
-    {
-        var wasPreviouslyFocused = isChatFocused;
-
-        if (isChatFocused && !wasPreviouslyFocused)
-        {
-            if (!disabledInput)
-            {
-                DisableInput();
-                disabledInput = true;
-            }
-        }
-        else if (!isChatFocused && wasPreviouslyFocused)
-        {
-            if (disabledInput)
-            {
-                EnableInput();
-                disabledInput = false;
-            }
-        }
-
-        wasChatFocused = isChatFocused;
     }
 
     private void DrawChat()
@@ -260,14 +238,16 @@ internal sealed partial class MultiplayerUI
             "chat_input",
             new Rect(
                 6 + HorizontalSpacing,
-                chatY + ChatHeight - InputHeight - 5, 
+                chatY + ChatHeight - InputHeight - 5,
                 ChatWidth - (HorizontalSpacing * 2),
                 InputHeight
-                ),
+            ),
             chatInput,
-            MaxChatMessageLength, false, true);
+            MaxChatMessageLength,
+            numbersOnly: false,
+            isChat: true
+        );
 
-        UpdateChatFocusState();
         ProcessFocusRequests();
     }
 }

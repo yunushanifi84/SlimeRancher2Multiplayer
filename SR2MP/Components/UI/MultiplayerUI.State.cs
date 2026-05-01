@@ -4,19 +4,8 @@ namespace SR2MP.Components.UI;
 
 internal sealed partial class MultiplayerUI
 {
-    [Obsolete("Use DrawTabRow function!")]
-    private enum MainTab { Join, Host }
-    //private MainTab mainTab = MainTab.Join;
     private byte mainTab = 0;
-    
-    [Obsolete("Use DrawTabRow function!")]
-    private enum HostTab { Automatic, ManualCode, ManualSimple }
-    //private HostTab hostTab = HostTab.Automatic;
     private byte hostTab = 0;
-    
-    [Obsolete("Use DrawTabRow function!")]
-    private enum JoinTab { Code, Manual }
-    //private JoinTab joinTab = JoinTab.Code;
     private byte joinTab = 0;
 
     public enum MenuState : byte
@@ -104,6 +93,10 @@ internal sealed partial class MultiplayerUI
 
             if (previousState is MenuState.DisconnectedMainMenu or MenuState.Hidden)
                 ClearAndWelcome();
+        }
+        else if (!isInGame)
+        {
+            chatShown = false;
         }
 
         previousState = state;

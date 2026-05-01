@@ -36,6 +36,13 @@ internal sealed partial class MultiplayerUI : MonoBehaviour
         Instance = null!;
     }
 
+    private void Update()
+    {
+        HandleUIToggle();
+        HandleChatToggle();
+        HandleChatInput();
+    }
+
     private void OnGUI()
     {
         GUI.skin.label.richText = true;
