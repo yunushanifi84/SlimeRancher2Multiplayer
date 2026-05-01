@@ -62,7 +62,7 @@ internal sealed class ActorUpdateHandler : BasePacketHandler<ActorUpdatePacket>
                 resource.state = packet.ResourceState;
                 resource.progressTime = packet.ResourceProgress;
 
-                networkComponent.SetResourceState(packet.ResourceState, packet.ResourceProgress);
+                networkComponent.SetResourceState(packet.ResourceState, packet.ResourceProgress, true);
                 break;
             }
         }
