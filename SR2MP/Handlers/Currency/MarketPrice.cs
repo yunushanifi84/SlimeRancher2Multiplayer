@@ -21,7 +21,10 @@ internal sealed class MarketPriceHandler : BasePacketHandler<MarketPricePacket>
             i++;
         }
 
-        MarketUIInstance?.EconUpdate();
+        try
+        {
+            MarketUIInstance?.EconUpdate();
+        } catch { /* ignored */ }
         return false;
     }
 }
