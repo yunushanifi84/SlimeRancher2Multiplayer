@@ -1,11 +1,13 @@
 using System.Collections;
 using HarmonyLib;
+using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.Player;
 using Il2CppMonomiPark.SlimeRancher.SceneManagement;
 using MelonLoader;
 using SR2MP.Components.Actor;
 using SR2MP.Packets.Actor;
 using SR2MP.Shared.Managers;
+using Unity.Mathematics;
 
 namespace SR2MP.Patches.Actor;
 
@@ -26,6 +28,11 @@ internal static class OnActorSpawn
 
         var id = actor.GetComponent<IdentifiableActor>().GetActorId();
 
+        var emotions = float4.zero;
+        var slimeModel = actor.GetComponent<IdentifiableActor>()._model.TryCast<SlimeModel>();
+        if (slimeModel != null)
+            emotions = slimeModel.Emotions;
+
         var packet = new ActorSpawnPacket
         {
             ActorType = actorType,
@@ -33,6 +40,7 @@ internal static class OnActorSpawn
             ActorId = id,
             Position = actor.transform.position,
             Rotation = actor.transform.rotation,
+            Emotions = emotions,
             FirstAppearance = appearance,
             SecondAppearance = secondAppearance,
         };
