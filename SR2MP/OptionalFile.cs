@@ -12,13 +12,13 @@ using System.Diagnostics.CodeAnalysis; using System.IO; using System.Reflection;
 // This will show an error message to the user, if Starlight isn't installed!
 // This also allows you to provide a required game or Starlight version
 
-[assembly: MelonInfo(typeof(OptionFileEntrypoint),  
-    //Those infos are only shown by MelonLoader in the console when starting up
-    //They don't have to match the real ones.
-    BuildInfo.Name, //Put in the Expansions name
-    BuildInfo.MelonVersion,  //Put in the version
-    BuildInfo.Author //Put in your name
-    )]
+// [assembly: MelonInfo(typeof(OptionFileEntrypoint),  
+//     //Those infos are only shown by MelonLoader in the console when starting up
+//     //They don't have to match the real ones.
+//     BuildInfo.Name, //Put in the Expansions name
+//     BuildInfo.MelonVersion,  //Put in the version
+//     BuildInfo.Author //Put in your name
+//     )]
 [SuppressMessage("ReSharper", "CheckNamespace")]
 static class OptionFileInfo
 {
@@ -26,7 +26,6 @@ static class OptionFileInfo
     internal const string ExactGameVersion = BuildInfo.ExactGameVersion; //e.g 1.1.0 or something similar (optional)
     internal const string MinimumStarlightVersion = BuildInfo.MinimumStarlightVersion; //e.g 4.0.0 put in the minimum required version of Starlight (optional)
 }
-
 
 // DON'T MODIFY BEYOND THIS POINT
 // Leave this as is
@@ -289,11 +288,8 @@ class OptionFileEntrypoint : MelonMod
             MelonLogger.Msg("Starlight is not installed, aborting!");
             MelonCoroutines.Start(CheckForMainMenu(0));
         }
-
-        Unregister();
     }
-
-
+    
     bool IsSameOrNewer(string v1, string v2)
     {
         bool TryParse(string s, out int[] parts)
