@@ -1,9 +1,10 @@
 using Il2CppTMPro;
 using MelonLoader;
+using Starlight.Storage;
 
 namespace SR2MP.Components.Utils;
 
-[RegisterTypeInIl2Cpp(false)]
+[InjectIntoIL]
 internal sealed class TransformLookAtCamera : MonoBehaviour
 {
     public Transform TargetTransform;

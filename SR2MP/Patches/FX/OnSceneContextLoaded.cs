@@ -16,6 +16,6 @@ internal static class OnSceneContextLoaded
 
     public static void Postfix()
     {
-        MelonCoroutines.Start(WaitForFinishLoading());
+        StartCoroutine(WaitForFinishLoading());
     }
 }

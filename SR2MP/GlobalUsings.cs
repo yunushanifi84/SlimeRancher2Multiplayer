@@ -15,3 +15,10 @@ global using Il2CppMonomiPark.SlimeRancher;
 
 global using static SR2MP.Shared.Utils.FXConstants;
 global using static SR2MP.GlobalVariables;
+
+global using Starlight;
+global using Starlight.Utils;
+global using static Starlight.Utils.ActionsEUtil;
+global using static Starlight.Utils.LanguageEUtil;
+global using static Starlight.Utils.UnityEUtil;
+global using static Starlight.ContextShortcuts;

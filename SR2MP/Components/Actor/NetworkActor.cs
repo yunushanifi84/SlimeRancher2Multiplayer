@@ -8,13 +8,14 @@ using JetBrains.Annotations;
 using MelonLoader;
 using SR2MP.Packets.Actor;
 using SR2MP.Shared.Utils;
+using Starlight.Storage;
 using Unity.Mathematics;
 using Delegate = Il2CppSystem.Delegate;
 using Type = Il2CppSystem.Type;
 
 namespace SR2MP.Components.Actor;
 
-[RegisterTypeInIl2Cpp(false)]
+[InjectIntoIL]
 internal sealed class NetworkActor : MonoBehaviour
 {
     public RegionMember? RegionMember;
@@ -215,7 +216,7 @@ internal sealed class NetworkActor : MonoBehaviour
 
         try
         {
-            MelonCoroutines.Start(WaitOneFrameOnHibernationChange(value));
+            ContextShortcuts.StartCoroutine(WaitOneFrameOnHibernationChange(value));
         }
         catch (Exception ex)
         {

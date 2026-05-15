@@ -1,6 +1,6 @@
 using HarmonyLib;
 using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
-using SR2E.Utils;
+using Starlight.Utils;
 using SR2MP.Components.Player;
 
 namespace SR2MP.Patches.Player;

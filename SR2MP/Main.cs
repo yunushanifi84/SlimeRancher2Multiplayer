@@ -2,9 +2,9 @@
 using Il2CppTMPro;
 using MelonLoader;
 using MelonLoader.Utils;
-using SR2E.Expansion;
+using Starlight.Expansion;
 using SR2MP.Client;
-using SR2E.Utils;
+using Starlight.Utils;
 using SR2MP.Components.FX;
 using SR2MP.Components.Player;
 using SR2MP.Components.Time;
@@ -15,6 +15,8 @@ using SR2MP.Shared.Managers;
 using SR2MP.Shared.Utils;
 using SR2MP.Client;
 using SR2MP.Server;
+using Starlight.Enums;
+using Starlight.Storage;
 using UnityEngine.UI;
 
 namespace SR2MP;
@@ -22,8 +24,28 @@ namespace SR2MP;
 /// <summary>
 /// The main expansion class serving as the core entry point and configuration hub for the multiplayer environment.
 /// </summary>
-public sealed class Main : SR2EExpansionV3
+[StarlightLoadExpansion]
+public sealed class Main : StarlightExpansionV01
 {
+    protected override StarlightPackageInfo info => new ()
+    {
+        ID = BuildInfo.ID,
+        Name = BuildInfo.Name,
+        Author = BuildInfo.Author,
+        CoAuthors = BuildInfo.CoAuthors,
+        Contributors = BuildInfo.Contributors,
+        Description = BuildInfo.Description,
+        SourceCode = BuildInfo.SourceCode,
+        Version = BuildInfo.Version,
+        Nexus = BuildInfo.Nexus,
+        Discord = BuildInfo.Discord,
+        UsePrism = BuildInfo.UsePrism,
+        IconPath = "Assets/PlayerMarker.png",
+        
+        LoadTime = ExpansionLoadTime.Startup,
+        UnloadTime = ExpansionUnloadTime.Never,
+        MultiplayerRequirement = MultiplayerRequirement.ServerAndClient,
+    };
     /// <summary>
     /// The random parts of the mod. Please pass in a seed that can be the same between clients before attempting to randomize.
     /// </summary>
@@ -98,7 +120,7 @@ public sealed class Main : SR2EExpansionV3
     }
 
     /// <inheritdoc/>
-    public override void OnInitializeMelon() => LoadBundledAssemblies();
+    public override void OnInitialize() => LoadBundledAssemblies();
 
     internal static void SendToAllOrServer<T>(T packet) where T : IPacket
     {
@@ -179,17 +201,15 @@ public sealed class Main : SR2EExpansionV3
                 return;
             }
 
-            using var stream = Core.GetManifestResourceStream($"SR2MP.Bundled.{fileName}");
+            var bytes = EmbeddedResourceEUtil.LoadResource($"Bundled.{fileName}");
 
-            if (stream == null)
+            if (bytes == null)
             {
                 SrLogger.LogWarning("Missing embedded dependency: " + fileName);
                 return;
             }
 
-            using var memoryStream = new MemoryStream();
-            stream.CopyTo(memoryStream);
-            Assembly.Load(memoryStream.ToArray());
+            Assembly.Load(bytes);
         }
         catch (Exception ex)
         {
@@ -216,17 +236,15 @@ public sealed class Main : SR2EExpansionV3
             if (!Directory.Exists(dirPath))
                 Directory.CreateDirectory(dirPath);
 
-            var resourcePath = $"SR2MP.Bundled.{resourceName}.lic.txt";
-            using var stream = Core.GetManifestResourceStream(resourcePath);
+            var bytes = EmbeddedResourceEUtil.LoadResource($"Bundled.{resourceName}.lic.txt");
 
-            if (stream == null)
+            if (bytes == null)
             {
                 SrLogger.LogWarning("Missing embedded dependency: " + resourceName + ".lic.txt");
                 return;
             }
 
-            using var fileStream = File.Create(filePath);
-            stream.CopyTo(fileStream);
+            File.WriteAllBytes(filePath,bytes);
         }
         catch (Exception ex)
         {

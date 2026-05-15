@@ -2,10 +2,11 @@
 using JetBrains.Annotations;
 using MelonLoader;
 using SR2MP.Packets.LandPlots;
+using Starlight.Storage;
 
 namespace SR2MP.Components.LandPlots;
 
-[RegisterTypeInIl2Cpp(false)]
+[InjectIntoIL]
 internal sealed class NetworkGarden : MonoBehaviour
 {
     private SpawnResource? garden;

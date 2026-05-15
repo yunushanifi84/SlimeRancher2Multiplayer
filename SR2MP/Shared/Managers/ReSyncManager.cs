@@ -244,7 +244,7 @@ internal sealed class ReSyncManager
             return;
         }
 
-        MelonCoroutines.Start(
+        StartCoroutine(
             WeatherPacket.CreateFromModel(
                 weatherRegistry._model,
                 PacketType.InitialWeather,

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using Il2CppInterop.Runtime.Attributes;
-using SR2E.Utils;
+using Starlight.Utils;
 using SR2MP.Shared.Utils;
 using UnityEngine.InputSystem.Utilities;
 

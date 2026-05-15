@@ -42,8 +42,12 @@
     </PackageReference>
 
     <!-- <EmbeddedResource Include="Resources\*" /> -->
-    <EmbeddedResource Include="Bundled\*" />
-    <EmbeddedResource Include="Assets\PlayerMarker.png" />
+    <EmbeddedResource Include="Bundled\**">
+        <LogicalName>$([System.String]::Copy('$(RootNamespace).Bundled.%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '.').Replace('/', '.'))</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\**">
+        <LogicalName>$([System.String]::Copy('$(RootNamespace).Assets.%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '.').Replace('/', '.'))</LogicalName>
+    </EmbeddedResource>
 
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)\stylecop.json" Link="stylecop.json" Visible="false"/>
   </ItemGroup>

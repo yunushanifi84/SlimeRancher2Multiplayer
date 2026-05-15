@@ -87,7 +87,7 @@ internal static class NetworkAmmoManager
 
     public static void RegisterAmmoPointer(this SiloStorage siloStorage)
     {
-        MelonCoroutines.Start(RegisterAmmoPointerCoroutine(siloStorage));
+        StartCoroutine(RegisterAmmoPointerCoroutine(siloStorage));
     }
 
     private static IEnumerator RegisterAmmoPointerCoroutine(SiloStorage siloStorage)

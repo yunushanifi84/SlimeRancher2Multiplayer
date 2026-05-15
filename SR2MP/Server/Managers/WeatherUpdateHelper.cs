@@ -102,7 +102,7 @@ internal static class WeatherUpdateHelper
                 return;
             }
 
-            MelonCoroutines.Start(CreateWeatherPatternLookup(registry));
+            StartCoroutine(CreateWeatherPatternLookup(registry));
         }
         catch (Exception ex)
         {
@@ -178,7 +178,7 @@ internal static class WeatherUpdateHelper
                 return;
             }
 
-            MelonCoroutines.Start(
+            StartCoroutine(
                 WeatherPacket.CreateFromModel(
                     weatherRegistry._model,
                     PacketType.WeatherUpdate,

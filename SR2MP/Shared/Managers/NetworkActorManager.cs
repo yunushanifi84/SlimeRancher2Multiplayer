@@ -24,7 +24,7 @@ internal sealed partial class NetworkActorManager
 
         ActorTypes[-1] = null!;
 
-        MelonCoroutines.Start(ZoneLoadingLoop());
+        StartCoroutine(ZoneLoadingLoop());
     }
 
     private IEnumerator ZoneLoadingLoop()

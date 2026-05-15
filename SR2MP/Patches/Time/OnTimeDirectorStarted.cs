@@ -1,5 +1,5 @@
 using HarmonyLib;
-using SR2E.Utils;
+using Starlight.Utils;
 using SR2MP.Components.Time;
 
 namespace SR2MP.Patches.Time;

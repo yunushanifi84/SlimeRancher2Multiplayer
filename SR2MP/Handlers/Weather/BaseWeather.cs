@@ -14,7 +14,7 @@ internal abstract class BaseWeatherHandler : BasePacketHandler<WeatherPacket>
 
     protected sealed override bool Handle(WeatherPacket packet, IPEndPoint? _)
     {
-        MelonCoroutines.Start(NetworkWeatherManager.Apply(packet, _immediate));
+        StartCoroutine(NetworkWeatherManager.Apply(packet, _immediate));
         return false;
     }
 }

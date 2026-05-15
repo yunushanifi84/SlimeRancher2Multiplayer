@@ -10,7 +10,7 @@ internal static class OnSiloInitialize
 {
     public static void Postfix(SiloStorage __instance)
     {
-        MelonCoroutines.Start(Initialize(__instance));
+        StartCoroutine(Initialize(__instance));
     }
 
     public static IEnumerator Initialize(SiloStorage siloStorage)

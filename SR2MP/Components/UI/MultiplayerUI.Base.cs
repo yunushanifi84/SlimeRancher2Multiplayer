@@ -1,10 +1,11 @@
 using MelonLoader;
-using SR2E.Utils;
+using Starlight.Storage;
+using Starlight.Utils;
 
 namespace SR2MP.Components.UI;
 
 // todo: Asset bundle
-[RegisterTypeInIl2Cpp(false)]
+[InjectIntoIL]
 internal sealed partial class MultiplayerUI : MonoBehaviour
 {
     public static readonly Color SelectedTextColor = new Color32(255, 255, 185, 255);

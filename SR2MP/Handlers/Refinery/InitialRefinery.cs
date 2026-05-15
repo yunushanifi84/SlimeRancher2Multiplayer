@@ -12,7 +12,7 @@ internal sealed class InitialRefineryHandler : BasePacketHandler<InitialRefinery
 {
     protected override bool Handle(InitialRefineryPacket packet, IPEndPoint? _)
     {
-        MelonCoroutines.Start(InitializeRefinery(packet));
+        StartCoroutine(InitializeRefinery(packet));
         return false;
     }
 

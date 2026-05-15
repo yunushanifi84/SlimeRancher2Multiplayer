@@ -1,6 +1,6 @@
 using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.Drone;
-using SR2E.Utils;
+using Starlight.Utils;
 using SR2MP.Components.Actor;
 using SR2MP.Packets.Loading;
 using SR2MP.Shared.Utils;
@@ -51,7 +51,7 @@ internal sealed partial class NetworkActorManager
         if (!type.prefab)
             return false;
 
-        if (type.isGadget())
+        if (type.IsGadget())
             return TrySpawnNetworkGadget(actorId, position, rotation, typeId, sceneId, out model);
 
         if (ActorIDAlreadyInUse(actorId))
@@ -276,7 +276,7 @@ internal sealed partial class NetworkActorManager
             return false;
         }
 
-        if (type.isGadget())
+        if (type.IsGadget())
             return TrySpawnInitialGadget(actorData, out model);
 
         switch (actorData)
@@ -303,7 +303,7 @@ internal sealed partial class NetworkActorManager
         if (!type.prefab)
             return false;
 
-        if (type.isGadget())
+        if (type.IsGadget())
         {
             SrLogger.LogWarning($"Tried to spawn gadget over the network, but used the non-gadget function!\n\tActor {actorId.Value}: {type.name}");
             return false;

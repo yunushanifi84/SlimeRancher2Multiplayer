@@ -40,7 +40,7 @@ internal sealed class ActorsLoadHandler : BasePacketHandler<InitialActorsPacket>
             ActorManager.TrySpawnInitialActor(actor, out var _);
         }
 
-        MelonCoroutines.Start(ActorManager.TakeOwnershipOfNearby());
+        StartCoroutine(ActorManager.TakeOwnershipOfNearby());
 
         return false;
     }

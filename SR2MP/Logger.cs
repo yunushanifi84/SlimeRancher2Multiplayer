@@ -3,13 +3,13 @@ using JetBrains.Annotations;
 using MelonLoader;
 using MelonLoader.Logging;
 using MelonLoader.Utils;
-using SR2E.Managers;
+using Starlight.Managers;
 // ReSharper disable InconsistentNaming
 
 namespace SR2MP;
 
 /// <summary>
-/// A utility class for handling formatted logging across file outputs, MelonLoader consoles, and SR2E management.
+/// A utility class for handling formatted logging across file outputs, MelonLoader consoles, and Starlight management.
 /// </summary>
 [PublicApi]
 public static class Logger
@@ -72,24 +72,24 @@ public static class Logger
     /// </summary>
     /// <inheritdoc cref="LogInternal"/>
     public static void LogMessage(object? message, SrLogTarget target = SrLogTarget.Both)
-        => LogInternal(message, LogLevel.Message, target, SR2ELogManager.SendMessage, _melonLogger.Msg);
+        => LogInternal(message, LogLevel.Message, target, StarlightLogManager.SendMessage, _melonLogger.Msg);
 
     /// <summary>
     /// Logs a warning message.
     /// </summary>
     /// <inheritdoc cref="LogInternal"/>
     public static void LogWarning(object? message, SrLogTarget target = SrLogTarget.Both)
-        => LogInternal(message, LogLevel.Warning, target, SR2ELogManager.SendWarning, _melonLogger.Warning);
+        => LogInternal(message, LogLevel.Warning, target, StarlightLogManager.SendWarning, _melonLogger.Warning);
 
     /// <summary>
     /// Logs an error message.
     /// </summary>
     /// <inheritdoc cref="LogInternal"/>
     public static void LogError(object? message, SrLogTarget target = SrLogTarget.Both)
-        => LogInternal(message, LogLevel.Error, target, SR2ELogManager.SendError, _melonLogger.Error);
+        => LogInternal(message, LogLevel.Error, target, StarlightLogManager.SendError, _melonLogger.Error);
 
     /// <summary>
-    /// Logs a debug message, which bypasses SR2E and MelonLoader outputs.
+    /// Logs a debug message, which bypasses Starlight and MelonLoader outputs.
     /// </summary>
     /// <inheritdoc cref="LogInternal"/>
     public static void LogDebug(object? message, SrLogTarget target = SrLogTarget.Both)
@@ -121,7 +121,7 @@ public static class Logger
     /// <param name="message">The message to log.</param>
     /// <param name="level">The message level.</param>
     /// <param name="target">The intended log file targets.</param>
-    /// <param name="sr2EAction">The SR2E logging action.</param>
+    /// <param name="sr2EAction">The Starlight logging action.</param>
     /// <param name="melonAction">The MelonLoader logging action.</param>
     private static void LogInternal(object? message, LogLevel level, SrLogTarget target, Action<string>? sr2EAction, Action<string>? melonAction)
     {
@@ -149,21 +149,21 @@ public static class Logger
     /// </summary>
     /// <inheritdoc cref="LogSplit"/>
     public static void LogMessage(object? publicMsg, object? sensitiveMsg)
-        => LogSplit(publicMsg, sensitiveMsg, LogLevel.Message, SR2ELogManager.SendMessage, _melonLogger.Msg);
+        => LogSplit(publicMsg, sensitiveMsg, LogLevel.Message, StarlightLogManager.SendMessage, _melonLogger.Msg);
 
     /// <summary>
     /// Logs a warning message, separating public output from sensitive file output.
     /// </summary>
     /// <inheritdoc cref="LogSplit"/>
     public static void LogWarning(object? publicMsg, object? sensitiveMsg)
-        => LogSplit(publicMsg, sensitiveMsg, LogLevel.Warning, SR2ELogManager.SendWarning, _melonLogger.Warning);
+        => LogSplit(publicMsg, sensitiveMsg, LogLevel.Warning, StarlightLogManager.SendWarning, _melonLogger.Warning);
 
     /// <summary>
     /// Logs an error message, separating public output from sensitive file output.
     /// </summary>
     /// <inheritdoc cref="LogSplit"/>
     public static void LogError(object? publicMsg, object? sensitiveMsg)
-        => LogSplit(publicMsg, sensitiveMsg, LogLevel.Error, SR2ELogManager.SendError, _melonLogger.Error);
+        => LogSplit(publicMsg, sensitiveMsg, LogLevel.Error, StarlightLogManager.SendError, _melonLogger.Error);
 
     /// <summary>
     /// Logs a debug message, separating public output from sensitive file output.
@@ -188,7 +188,7 @@ public static class Logger
     /// <param name="publicMsg">The message sent to public logs and MelonLoader.</param>
     /// <param name="sensitiveMsg">The detailed message sent only to the sensitive log file.</param>
     /// <param name="level">The message level.</param>
-    /// <param name="sr2EAction">The SR2E logging action.</param>
+    /// <param name="sr2EAction">The Starlight logging action.</param>
     /// <param name="melonAction">The MelonLoader logging action.</param>
     private static void LogSplit(object? publicMsg, object? sensitiveMsg, LogLevel level, Action<string>? sr2EAction, Action<string>? melonAction)
     {

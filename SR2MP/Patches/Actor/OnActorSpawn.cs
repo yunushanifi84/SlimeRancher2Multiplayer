@@ -72,6 +72,6 @@ internal static class OnActorSpawn
         ActorManager.Actors[__result.GetComponent<IdentifiableActor>()._model.actorId.Value] =
             __result.GetComponent<IdentifiableActor>()._model;
 
-        MelonCoroutines.Start(SpawnOverNetwork(actorType, (byte)sceneGroupId, __result, appearance, secondAppearance));
+        StartCoroutine(SpawnOverNetwork(actorType, (byte)sceneGroupId, __result, appearance, secondAppearance));
     }
 }

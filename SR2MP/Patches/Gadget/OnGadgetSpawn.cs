@@ -45,6 +45,6 @@ internal static class OnGadgetSpawn
         Quaternion rotation)
     {
         if (!HandlingPacket)
-            MelonCoroutines.Start(SpawnOverNetwork(__result, sceneGroup, position, rotation));
+            StartCoroutine(SpawnOverNetwork(__result, sceneGroup, position, rotation));
     }
 }

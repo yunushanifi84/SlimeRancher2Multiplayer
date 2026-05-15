@@ -1,10 +1,11 @@
 using MelonLoader;
 using SR2MP.Server.Managers;
 using SR2MP.Shared.Utils;
+using Starlight.Storage;
 
 namespace SR2MP.Components.World;
 
-[RegisterTypeInIl2Cpp(false)]
+[InjectIntoIL]
 internal sealed class NetworkWeather : MonoBehaviour
 {
     private float updateTimer;

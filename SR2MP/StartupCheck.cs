@@ -6,7 +6,7 @@ namespace SR2MP;
 
 internal static class StartupCheck
 {
-    private const string RequiredGameVersion = BuildInfo.ExactRequiredGameVersion;
+    private const string RequiredGameVersion = BuildInfo.ExactGameVersion;
     private const string VersionUrl = "https://raw.githubusercontent.com/pyeight/SlimeRancher2Multiplayer/refs/heads/master/latestModVersion.txt";
     private const string DiscordUrl = BuildInfo.Discord;
 
@@ -75,7 +75,7 @@ internal static class StartupCheck
         }
 
         Task.Run(async () => await CheckModVersionAsync());
-        MelonCoroutines.Start(QuitCoroutine());
+        StartCoroutine(QuitCoroutine());
     }
 
     private static System.Collections.IEnumerator QuitCoroutine()
@@ -102,7 +102,7 @@ internal static class StartupCheck
             using var client = new HttpClient();
             client.Timeout = TimeSpan.FromSeconds(5);
 
-            const string currentModVersion = BuildInfo.DisplayVersion;
+            const string currentModVersion = BuildInfo.Version;
             var latestVersion = (await client.GetStringAsync(VersionUrl)).Trim();
 
             switch (CompareVersions(currentModVersion, latestVersion))

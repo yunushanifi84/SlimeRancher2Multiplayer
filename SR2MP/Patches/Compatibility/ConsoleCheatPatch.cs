@@ -1,9 +1,9 @@
 using HarmonyLib;
-using SR2E.Managers;
+using Starlight.Managers;
 
 namespace SR2MP.Patches.Compatibility;
 
-[HarmonyPatch(typeof(SR2ECommandManager), nameof(SR2ECommandManager.ExecuteByString), typeof(string), typeof(bool), typeof(bool))]
+[HarmonyPatch(typeof(StarlightCommandManager), nameof(StarlightCommandManager.ExecuteByString), typeof(string), typeof(bool), typeof(bool))]
 internal static class ConsoleCheatPatch
 {
     public static bool Prefix(string input)
@@ -16,7 +16,7 @@ internal static class ConsoleCheatPatch
 
         var containsCheat = false;
 
-        // Code copied from SR2E
+        // Code copied from Starlight
         var cmds = input.Split(';');
         foreach (var cc in cmds)
         {
@@ -35,7 +35,7 @@ internal static class ConsoleCheatPatch
         if (!containsCheat)
             return true;
 
-        SR2ELogManager.SendError("Cheats are disabled on this server!");
+        StarlightLogManager.SendError("Cheats are disabled on this server!");
         return false;
     }
 }

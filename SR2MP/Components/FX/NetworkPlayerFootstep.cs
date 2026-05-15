@@ -1,10 +1,11 @@
 using JetBrains.Annotations;
 using MelonLoader;
+using Starlight.Storage;
 
 namespace SR2MP.Components.FX;
 
 // Modified version of PlayerFootstepFX (from a restored decomp of 'PlayerFootstepFX' qwq)
-[RegisterTypeInIl2Cpp(false)]
+[InjectIntoIL]
 internal sealed class NetworkPlayerFootstep : MonoBehaviour
 {
     public Transform SpawnAtTransform;

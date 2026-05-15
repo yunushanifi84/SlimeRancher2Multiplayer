@@ -1,8 +1,9 @@
 using MelonLoader;
+using Starlight.Storage;
 
 namespace SR2MP.Components.Time;
 
-[RegisterTypeInIl2Cpp(false)]
+[InjectIntoIL]
 internal sealed class ForceTimeScale : MonoBehaviour
 {
     public float TimeScale = 1f;

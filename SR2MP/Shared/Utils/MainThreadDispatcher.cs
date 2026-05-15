@@ -2,10 +2,11 @@ using System.Collections.Concurrent;
 using Il2CppInterop.Runtime.Attributes;
 using MelonLoader;
 using SR2MP.Packets.Utils;
+using Starlight.Storage;
 
 namespace SR2MP.Shared.Utils;
 
-[RegisterTypeInIl2Cpp(false)]
+[InjectIntoIL]
 internal sealed class MainThreadDispatcher : MonoBehaviour
 {
     public static MainThreadDispatcher Instance { get; private set; }

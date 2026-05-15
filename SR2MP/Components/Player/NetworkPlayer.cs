@@ -10,14 +10,14 @@ using SR2MP.Client.Models;
 using SR2MP.Components.FX;
 using SR2MP.Components.Utils;
 using SR2MP.Shared.Managers;
-
+using Starlight.Storage;
 using static Starlight.ContextShortcuts;
 using static SR2MP.Shared.Utils.Timers;
 
 namespace SR2MP.Components.Player;
 
-[RegisterTypeInIl2Cpp(false)]
-//[RegisterTypeInIl2CppWithInterfaces(false, typeof(IMapMarkerSource))]
+[InjectIntoIL]
+//[InjectIntoIL(typeof(IMapMarkerSource))]
 internal partial class NetworkPlayer : MonoBehaviour
 {
     private static readonly int HorizontalMovement = Animator.StringToHash("HorizontalMovement");
