@@ -37,20 +37,22 @@ internal struct ActorUpdatePacket : IPacket
         writer.WriteQuaternion(Rotation);
         writer.WriteVector3(Velocity);
 
-        if (UpdateType == ActorUpdateType.Slime)
+        switch (UpdateType)
         {
-            writer.WriteFloat4(Emotions);
-            writer.WriteBool(Sleeping);
-        }
-        else if (UpdateType == ActorUpdateType.Resource)
-        {
-            writer.WriteDouble(ResourceProgress);
-            writer.WritePackedEnum(ResourceState);
-        }
-        else if (UpdateType == ActorUpdateType.Plort)
-        {
-            writer.WriteBool(Invulnerable);
-            writer.WriteFloat(InvulnerablePeriod);
+            case ActorUpdateType.Slime:
+                writer.WriteFloat4(Emotions);
+                writer.WriteBool(Sleeping);
+                break;
+            
+            case ActorUpdateType.Resource:
+                writer.WriteDouble(ResourceProgress);
+                writer.WritePackedEnum(ResourceState);
+                break;
+            
+            case ActorUpdateType.Plort:
+                writer.WriteBool(Invulnerable);
+                writer.WriteFloat(InvulnerablePeriod);
+                break;
         }
     }
 
