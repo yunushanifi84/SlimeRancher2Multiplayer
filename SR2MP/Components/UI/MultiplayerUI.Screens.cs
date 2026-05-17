@@ -19,7 +19,7 @@ internal sealed partial class MultiplayerUI
             : value;
 
         if (activeInputId == id)
-            GUI.skin.box.normal.textColor = SelectedTextColor;
+            GUI.skin.box.normal.textColor = new Color32(255, 255, 185, 255);
 
         GUI.Box(rect, displayValue);
 

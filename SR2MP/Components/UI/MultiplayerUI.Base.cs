@@ -8,7 +8,6 @@ namespace SR2MP.Components.UI;
 [InjectIntoIL]
 internal sealed partial class MultiplayerUI : MonoBehaviour
 {
-    public static readonly Color SelectedTextColor = new Color32(255, 255, 185, 255);
     public static MultiplayerUI Instance { get; private set; }
 
     private bool didUnfocus;
@@ -57,7 +56,7 @@ internal sealed partial class MultiplayerUI : MonoBehaviour
         previousLayoutRect = new Rect(6, 16, WindowWidth, 0);
         previousLayoutHorizontalIndex = 0;
 
-        if (!MenuEUtil.isAnyMenuOpen)
+        if (!MenuEUtil.isAnyMenuOpen && !MenuEUtil.isAnyPopUpOpen)
         {
             didUnfocus = false;
             DrawWindow();
