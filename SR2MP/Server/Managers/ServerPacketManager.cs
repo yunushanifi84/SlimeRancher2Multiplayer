@@ -107,11 +107,10 @@ internal sealed class ServerPacketManager
             data.AsSpan(HeaderSize, trueChunkLength).CopyTo(chunkData);
 
             if (!PacketChunkManager.TryMergePacket(packetType,
-                chunkData, trueChunkLength, chunkIndex, totalChunks,
-                packetId, clientEp, reliability, channel, sequenceNumber,
-                out reader, out packetReliability, out packetChannel, out packetSequenceNumber))
+                    chunkData, trueChunkLength, chunkIndex, totalChunks,
+                    packetId, clientEp, reliability, channel, sequenceNumber,
+                    out reader, out packetReliability, out packetChannel, out packetSequenceNumber))
             {
-                PacketReader.Return(reader);
                 return;
             }
         }

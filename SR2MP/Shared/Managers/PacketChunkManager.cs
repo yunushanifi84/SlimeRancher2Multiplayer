@@ -92,9 +92,10 @@ internal static class PacketChunkManager
         outChannel = channel;
         outSequenceNumber = sequenceNumber;
 
-        if (chunkIndex >= totalChunks)
+        if (totalChunks == 0 || chunkIndex >= totalChunks)
         {
-            SrLogger.LogWarning($"Invalid chunk: index={chunkIndex} >= total={totalChunks}");
+            SrLogger.LogWarning($"Invalid chunk parameters: index={chunkIndex}, total={totalChunks}");
+            ArrayPool<byte>.Shared.Return(data);
             return false;
         }
 

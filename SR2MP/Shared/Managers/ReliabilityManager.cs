@@ -41,8 +41,8 @@ internal sealed class ReliabilityManager
 
         public void Dispose() => Return(this);
 
-        public static PendingPacket Borrow(SplitResult splitData, IPEndPoint destination, ushort packetId,
-            byte packetType)
+        public static PendingPacket Borrow(SplitResult splitData, IPEndPoint destination,
+            ushort packetId, byte packetType)
         {
             var packet = RecyclePool<PendingPacket>.Borrow();
             packet.Initialize(splitData, destination, packetId, packetType);
@@ -54,11 +54,10 @@ internal sealed class ReliabilityManager
 
     private readonly ConcurrentDictionary<PacketKey, PendingPacket> pendingPackets = new();
     private readonly ConcurrentDictionary<ChannelKey, ushort> lastProcessedSequence = new();
-
     private readonly ConcurrentDictionary<ChannelKey, int> sequenceNumbersByChannel = new();
-
     private readonly ConcurrentDictionary<ChannelKey, SortedDictionary<ushort, Action>> reorderBuffers = new();
     private readonly ConcurrentDictionary<ChannelKey, object> reorderLocks = new();
+    private readonly ConcurrentQueue<PendingPacket> pendingDisposal = new();
 
     private readonly Action<ArraySegment<byte>, IPEndPoint> sendRawCallback;
 
@@ -102,6 +101,10 @@ internal sealed class ReliabilityManager
             PendingPacket.Return(packet);
 
         pendingPackets.Clear();
+        
+        while (pendingDisposal.TryDequeue(out var leftover))
+            PendingPacket.Return(leftover);
+
         lastProcessedSequence.Clear();
         sequenceNumbersByChannel.Clear();
         reorderBuffers.Clear();
@@ -127,18 +130,25 @@ internal sealed class ReliabilityManager
         if (!pendingPackets.TryRemove(key, out var packet))
             return;
 
-        var latency = DateTime.UtcNow - packet.FirstSendTime;
-        PendingPacket.Return(packet);
         SrLogger.LogPacketSize(
-            $"ACK received for packet {packetId} (type={packetType}) after {packet.SendCount} sends, latency={latency.TotalMilliseconds:F1}ms");
+            $"ACK received for packet {packetId} (type={packetType}) " +
+            $"after {packet.SendCount} sends, " +
+            $"latency={(DateTime.UtcNow - packet.FirstSendTime).TotalMilliseconds:F1}ms");
+        
+        pendingDisposal.Enqueue(packet);
     }
 
-    // Returns the next sequence number for a given packet type on a given channel and destination
-    // Sequence numbers wrap from ushort.MaxValue back to 1
+    /// <summary>
+    /// Returns the next sequence number for a given packet type / channel / destination.
+    /// Sequence numbers wrap from <see cref="ushort.MaxValue"/> back to 1.
+    /// </summary>
     public ushort GetNextSequenceNumber(NetworkChannel channel, byte packetType, IPEndPoint destination)
     {
         var key = new ChannelKey(destination, channel, packetType);
-        var seq = sequenceNumbersByChannel.AddOrUpdate(key, 1, (_, current) => (current >= ushort.MaxValue) ? 1 : current + 1);
+        var seq = sequenceNumbersByChannel.AddOrUpdate(
+            key,
+            1,
+            (_, current) => current >= ushort.MaxValue ? 1 : current + 1);
 
         return (ushort)seq;
     }
@@ -146,14 +156,14 @@ internal sealed class ReliabilityManager
     public bool ShouldProcessOrderedPacket(IPEndPoint sender, ushort sequenceNumber, byte packetType,
         NetworkChannel channel, PacketReliability reliability, Action? processAction = null)
     {
-        var key = new ChannelKey(sender, channel, packetType);
+        var key     = new ChannelKey(sender, channel, packetType);
         var lockObj = reorderLocks.GetOrAdd(key, _ => new object());
 
         lock (lockObj)
         {
             if (!lastProcessedSequence.TryGetValue(key, out var lastSequence))
             {
-                // First packet from this sender for this type on this channel
+                // First packet from this sender on this channel/type
                 lastProcessedSequence[key] = sequenceNumber;
                 return true;
             }
@@ -183,18 +193,23 @@ internal sealed class ReliabilityManager
                     {
                         buffer[sequenceNumber] = processAction;
                         SrLogger.LogPacketSize(
-                            $"Buffered out-of-order packet: expected seq={expectedSequence}, got seq={sequenceNumber}, type={packetType}, channel={channel}, buffer size={buffer.Count}");
+                            $"Buffered out-of-order packet: " +
+                            $"expected seq={expectedSequence}, got seq={sequenceNumber}, " +
+                            $"type={packetType}, channel={channel}, buffer size={buffer.Count}");
                     }
                     else
                     {
                         SrLogger.LogPacketSize(
-                            $"Reorder buffer full, dropping packet: seq={sequenceNumber}, type={packetType}, channel={channel}");
+                            $"Reorder buffer full, dropping packet: " +
+                            $"seq={sequenceNumber}, type={packetType}, channel={channel}");
                     }
                 }
                 else
                 {
                     SrLogger.LogPacketAcknowledge(
-                        $"Out-of-order packet dropped: expected seq={expectedSequence}, got seq={sequenceNumber}, type={packetType}, channel={channel}");
+                        $"Out-of-order packet dropped: " +
+                        $"expected seq={expectedSequence}, got seq={sequenceNumber}, " +
+                        $"type={packetType}, channel={channel}");
                 }
             }
 
@@ -203,7 +218,6 @@ internal sealed class ReliabilityManager
     }
 
     // todo: review
-
     private void DrainReorderBuffer(ChannelKey key, object lockObj)
     {
         if (!reorderBuffers.TryGetValue(key, out var buffer) || buffer.Count == 0)
@@ -239,21 +253,25 @@ internal sealed class ReliabilityManager
                 var count = pendingPackets.Count;
                 if (count == 0)
                 {
+                    DrainDisposalQueue();
                     Thread.Sleep(10);
                     continue;
                 }
 
-                var now = DateTime.UtcNow;
-                var keysToRemove = ArrayPool<PacketKey>.Shared.Rent(count);
-                var removeCount = 0;
+                var now           = DateTime.UtcNow;
+                var keysToRemove  = ArrayPool<PacketKey>.Shared.Rent(count);
+                var removeCount   = 0;
 
                 foreach (var (key, packet) in pendingPackets)
                 {
-                    // Checks if packet has timed out
+                    if (packet.IsRecycled)
+                        continue;
+                    
                     if (now - packet.FirstSendTime > MaxRetryTime || packet.SendCount >= MaxResendAttempts)
                     {
                         SrLogger.LogPacketAcknowledge(
-                            $"Packet {packet.PacketId} (type={packet.PacketType}) failed after {packet.SendCount} attempts");
+                            $"Packet {packet.PacketId} (type={packet.PacketType}) " +
+                            $"failed after {packet.SendCount} attempts");
                         keysToRemove[removeCount++] = key;
                         continue;
                     }
@@ -270,12 +288,13 @@ internal sealed class ReliabilityManager
                         if (packet.SendCount % 10 == 0)
                         {
                             SrLogger.LogPacketAcknowledge(
-                                $"Resending packet {packet.PacketId} (type={packet.PacketType}) attempt #{packet.SendCount}");
+                                $"Resending packet {packet.PacketId} " +
+                                $"(type={packet.PacketType}) attempt #{packet.SendCount}");
                         }
                     }
                 }
 
-                // Removes timed out packets
+                // Remove timed out packets
                 for (var i = 0; i < removeCount; i++)
                 {
                     if (pendingPackets.TryRemove(keysToRemove[i], out var timedOutPacket))
@@ -284,7 +303,8 @@ internal sealed class ReliabilityManager
 
                 ArrayPool<PacketKey>.Shared.Return(keysToRemove);
 
-                // todo: Should not cause problems, if it does, remove
+                DrainDisposalQueue();
+
                 Thread.Sleep(10);
             }
             catch (Exception ex)
@@ -292,6 +312,12 @@ internal sealed class ReliabilityManager
                 SrLogger.LogError($"ResendLoop error: {ex}");
             }
         }
+    }
+    
+    private void DrainDisposalQueue()
+    {
+        while (pendingDisposal.TryDequeue(out var packet))
+            PendingPacket.Return(packet);
     }
 
     private static bool IsSequenceNewer(ushort s1, ushort s2)

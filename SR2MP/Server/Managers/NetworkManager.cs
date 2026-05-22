@@ -150,29 +150,8 @@ internal sealed class NetworkManager
 
         try
         {
-            var packetReliability = reliability ?? PacketReliability.Unreliable;
-
-            if (packetReliability.HasFlag(PacketReliability.Ordered))
-            {
-                foreach (var endPoint in endPoints)
-                    Send(data, endPoint.EndPoint, reliability, channel);
-
-                return;
-            }
-
-            var splitResult = PacketChunkManager.SplitPacket(data, packetReliability, channel, 0, out var packetId);
-
             foreach (var endPoint in endPoints)
-            {
-                if (packetReliability.HasFlag(PacketReliability.Reliable))
-                    reliabilityManager?.TrackPacket(splitResult, endPoint.EndPoint, packetId, data[0], packetReliability);
-
-                for (var i = 0; i < splitResult.Count; i++)
-                    SendRaw(splitResult.Chunks[i], endPoint.EndPoint);
-            }
-
-            if (packetReliability == PacketReliability.Unreliable)
-                splitResult.Dispose();
+                Send(data, endPoint.EndPoint, reliability, channel);
         }
         catch (Exception ex)
         {

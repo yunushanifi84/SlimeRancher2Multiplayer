@@ -127,12 +127,15 @@ internal sealed class NetworkActor : MonoBehaviour
                 return;
             }
 
-            emotions = GetComponent<SlimeEmotions>();
-            rigidbody = GetComponent<Rigidbody>();
+            emotions     = GetComponent<SlimeEmotions>();
+            rigidbody    = GetComponent<Rigidbody>();
             identifiable = GetComponent<Identifiable>();
-            cycle = GetComponent<ResourceCycle>();
+            cycle        = GetComponent<ResourceCycle>();
             RegionMember = GetComponent<RegionMember>();
+
             CachedLocallyOwned = LocallyOwned;
+            
+            SetRigidbodyState(LocallyOwned);
 
             GetActorType();
 
@@ -151,9 +154,9 @@ internal sealed class NetworkActor : MonoBehaviour
         if (ActorId.Value == 0 || !GameState.identifiables.TryGetValue(ActorId, out var identModel))
             return;
 
-        isSlime = identModel.TryCast<SlimeModel>() != null;
+        isSlime    = identModel.TryCast<SlimeModel>()   != null;
         isResource = identModel.TryCast<ProduceModel>() != null;
-        isPlort = identModel.TryCast<PlortModel>() != null;
+        isPlort    = identModel.TryCast<PlortModel>()   != null;
     }
 
     private void SetupHibernationEvent()
@@ -230,13 +233,13 @@ internal sealed class NetworkActor : MonoBehaviour
         if (LocallyOwned || IsDestroyed)
             return;
 
-        previousPosition = transform.position;
-        previousRotation = transform.rotation;
-        nextPosition = packet.Position;
-        nextRotation = packet.Rotation;
-        savedVelocity = packet.Velocity;
+        previousPosition   = transform.position;
+        previousRotation   = transform.rotation;
+        nextPosition       = packet.Position;
+        nextRotation       = packet.Rotation;
+        savedVelocity      = packet.Velocity;
         interpolationStart = UnityEngine.Time.unscaledTime;
-        interpolationEnd = interpolationStart + Timers.ActorTimer;
+        interpolationEnd   = interpolationStart + Timers.ActorTimer;
     }
 
     private void UpdateInterpolation()
@@ -244,14 +247,22 @@ internal sealed class NetworkActor : MonoBehaviour
         if (LocallyOwned || IsDestroyed || interpolationEnd <= interpolationStart)
             return;
 
-        var timer = Mathf.InverseLerp(interpolationStart, interpolationEnd, UnityEngine.Time.unscaledTime);
-        timer = Mathf.Clamp01(timer);
+        var t = Mathf.Clamp01(
+            Mathf.InverseLerp(interpolationStart, interpolationEnd, UnityEngine.Time.unscaledTime));
 
-        transform.position = Vector3.Lerp(previousPosition, nextPosition, timer);
-        transform.rotation = Quaternion.Lerp(previousRotation, nextRotation, timer);
+        var targetPos = Vector3.Lerp(previousPosition, nextPosition, t);
+        var targetRot = Quaternion.Lerp(previousRotation, nextRotation, t);
 
-        if (rigidbody)
-            rigidbody.velocity = savedVelocity;
+        if (rigidbody && rigidbody.isKinematic)
+        {
+            rigidbody.MovePosition(targetPos);
+            rigidbody.MoveRotation(targetRot);
+        }
+        else
+        {
+            transform.position = targetPos;
+            transform.rotation = targetRot;
+        }
     }
 
     public void Update()
@@ -340,7 +351,7 @@ internal sealed class NetworkActor : MonoBehaviour
 
             if (id.Value != 0)
             {
-                skippedUpdates = (int)(id.Value % ForceSendInterval);
+                skippedUpdates     = (int)(id.Value % ForceSendInterval);
                 staggerInitialized = true;
             }
         }
@@ -353,15 +364,15 @@ internal sealed class NetworkActor : MonoBehaviour
                 return;
         }
 
-        skippedUpdates = 0;
-        lastSentPosition = currentPosition;
-        lastSentRotation = currentRotation;
-        lastSentVelocity = currentVelocity;
+        skippedUpdates    = 0;
+        lastSentPosition  = currentPosition;
+        lastSentRotation  = currentRotation;
+        lastSentVelocity  = currentVelocity;
 
-        previousPosition = currentPosition;
-        previousRotation = currentRotation;
-        nextPosition = currentPosition;
-        nextRotation = currentRotation;
+        previousPosition  = currentPosition;
+        previousRotation  = currentRotation;
+        nextPosition      = currentPosition;
+        nextRotation      = currentRotation;
 
         var actorId = ActorId;
 
@@ -393,7 +404,7 @@ internal sealed class NetworkActor : MonoBehaviour
         {
             plortModel ??= GetComponent<PlortModel>();
 
-            var invulnerable = plortModel?._invulnerability?.IsInvulnerable ?? false;
+            var invulnerable       = plortModel?._invulnerability?.IsInvulnerable    ?? false;
             var invulnerablePeriod = plortModel?._invulnerability?.InvulnerabilityPeriod ?? 0f;
 
             return invulnerable != lastSentInvulnerable || invulnerablePeriod != lastSentInvulnerablePeriod;
@@ -406,7 +417,7 @@ internal sealed class NetworkActor : MonoBehaviour
     {
         var packet = new ActorUpdatePacket
         {
-            ActorId = actorId,
+            ActorId  = actorId,
             Position = nextPosition,
             Rotation = nextRotation,
             Velocity = rigidbody ? rigidbody.velocity : Vector3.zero
@@ -415,10 +426,10 @@ internal sealed class NetworkActor : MonoBehaviour
         if (isSlime)
         {
             packet.UpdateType = ActorUpdateType.Slime;
-            packet.Emotions = emotions ? emotions._model.Emotions : new float4(0, 0, 0, 0);
-            packet.Sleeping = emotions ? emotions._model.isSleeping : false;
-            lastSentEmotions = packet.Emotions;
-            lastSentSleeping = packet.Sleeping;
+            packet.Emotions   = emotions ? emotions._model.Emotions : new float4(0, 0, 0, 0);
+            packet.Sleeping   = emotions ? emotions._model.isSleeping : false;
+            lastSentEmotions  = packet.Emotions;
+            lastSentSleeping  = packet.Sleeping;
         }
         else if (isResource)
         {
@@ -427,10 +438,10 @@ internal sealed class NetworkActor : MonoBehaviour
             if (cycle?._model == null)
                 return packet;
 
-            packet.ResourceProgress = cycle._model.progressTime;
-            packet.ResourceState = cycle._model.state;
-            lastSentResourceProgress = packet.ResourceProgress;
-            lastSentResourceState = packet.ResourceState;
+            packet.ResourceProgress   = cycle._model.progressTime;
+            packet.ResourceState      = cycle._model.state;
+            lastSentResourceProgress  = packet.ResourceProgress;
+            lastSentResourceState     = packet.ResourceState;
         }
         else if (isPlort)
         {
@@ -438,10 +449,10 @@ internal sealed class NetworkActor : MonoBehaviour
 
             plortModel ??= GetComponent<PlortModel>();
 
-            packet.Invulnerable = plortModel?._invulnerability?.IsInvulnerable ?? false;
-            packet.InvulnerablePeriod = plortModel?._invulnerability?.InvulnerabilityPeriod ?? 0f;
-            lastSentInvulnerable = packet.Invulnerable;
-            lastSentInvulnerablePeriod = packet.InvulnerablePeriod;
+            packet.Invulnerable          = plortModel?._invulnerability?.IsInvulnerable ?? false;
+            packet.InvulnerablePeriod    = plortModel?._invulnerability?.InvulnerabilityPeriod ?? 0f;
+            lastSentInvulnerable         = packet.Invulnerable;
+            lastSentInvulnerablePeriod   = packet.InvulnerablePeriod;
         }
         else
         {
@@ -451,14 +462,23 @@ internal sealed class NetworkActor : MonoBehaviour
         return packet;
     }
 
-    private void SetRigidbodyState(bool enableConstraints)
+    private void SetRigidbodyState(bool locallyOwned)
     {
         if (rigidbody == null || IsDestroyed)
             return;
 
         try
         {
-            rigidbody.constraints = enableConstraints ? RigidbodyConstraints.None : RigidbodyConstraints.FreezeAll;
+            if (locallyOwned)
+            {
+                rigidbody.isKinematic = false;
+                rigidbody.constraints = RigidbodyConstraints.None;
+            }
+            else
+            {
+                rigidbody.constraints = RigidbodyConstraints.FreezeAll;
+                rigidbody.isKinematic = true;
+            }
         }
         catch (Exception ex)
         {
@@ -470,7 +490,7 @@ internal sealed class NetworkActor : MonoBehaviour
     public void OnDestroy()
     {
         IsDestroyed = true;
-        IsValid = false;
+        IsValid     = false;
     }
 
     public void SetResourceState(ResourceCycle.State state, double progress, bool force = false)

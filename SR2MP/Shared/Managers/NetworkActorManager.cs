@@ -56,6 +56,7 @@ internal sealed partial class NetworkActorManager
                 var obj = actor.value.GetGameObject();
                 if (!obj)
                     continue;
+
                 Object.Destroy(obj);
                 Actors.Remove(actor.value.actorId.Value);
             }
@@ -75,6 +76,7 @@ internal sealed partial class NetworkActorManager
 
                 if (actor2.value.sceneGroup != scene)
                     continue;
+
                 HandlingPacket = true;
                 var obj = InstantiationHelpers.InstantiateActorFromModel(model);
                 HandlingPacket = false;
@@ -85,9 +87,9 @@ internal sealed partial class NetworkActorManager
                 var networkComponent = obj.AddComponent<NetworkActor>();
 
                 networkComponent.previousPosition = model.lastPosition;
-                networkComponent.nextPosition = model.lastPosition;
+                networkComponent.nextPosition     = model.lastPosition;
                 networkComponent.previousRotation = model.lastRotation;
-                networkComponent.nextRotation = model.lastRotation;
+                networkComponent.nextRotation     = model.lastRotation;
 
                 ActorManager.Actors.Add(model.actorId.Value, model);
             }
@@ -108,9 +110,7 @@ internal sealed partial class NetworkActorManager
             if (id < min || id >= max)
                 continue;
             if (id > result)
-            {
                 result = id;
-            }
         }
 
         return result;
@@ -121,13 +121,11 @@ internal sealed partial class NetworkActorManager
         const int max = 12;
 
         var player = SceneContext.Instance.player;
-
         var bounds = new Bounds(player.transform.position, new Vector3(325, 1000, 325));
 
         var i = 0;
         foreach (var actor in Actors)
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (actor.Value == null)
                 continue;
 
@@ -144,9 +142,7 @@ internal sealed partial class NetworkActorManager
 
             var actorId = netActor.ActorId;
             if (actorId.Value == 0)
-            {
-                yield break;
-            }
+                continue;
 
             var packet = new ActorTransferPacket { ActorId = actorId, OwnerId = LocalID };
             Main.SendToAllOrServer(packet);
@@ -154,6 +150,7 @@ internal sealed partial class NetworkActorManager
 
             if (i <= max)
                 continue;
+            
             yield return null;
             i = 0;
         }
