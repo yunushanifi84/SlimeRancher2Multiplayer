@@ -134,8 +134,6 @@ internal sealed class NetworkActor : MonoBehaviour
             RegionMember = GetComponent<RegionMember>();
 
             CachedLocallyOwned = LocallyOwned;
-            
-            SetRigidbodyState(LocallyOwned);
 
             GetActorType();
 
@@ -250,19 +248,11 @@ internal sealed class NetworkActor : MonoBehaviour
         var t = Mathf.Clamp01(
             Mathf.InverseLerp(interpolationStart, interpolationEnd, UnityEngine.Time.unscaledTime));
 
-        var targetPos = Vector3.Lerp(previousPosition, nextPosition, t);
-        var targetRot = Quaternion.Lerp(previousRotation, nextRotation, t);
+        transform.position = Vector3.Lerp(previousPosition, nextPosition, t);
+        transform.rotation = Quaternion.Lerp(previousRotation, nextRotation, t);
 
-        if (rigidbody && rigidbody.isKinematic)
-        {
-            rigidbody.MovePosition(targetPos);
-            rigidbody.MoveRotation(targetRot);
-        }
-        else
-        {
-            transform.position = targetPos;
-            transform.rotation = targetRot;
-        }
+        if (rigidbody)
+            rigidbody.velocity = savedVelocity;
     }
 
     public void Update()
@@ -469,16 +459,9 @@ internal sealed class NetworkActor : MonoBehaviour
 
         try
         {
-            if (locallyOwned)
-            {
-                rigidbody.isKinematic = false;
-                rigidbody.constraints = RigidbodyConstraints.None;
-            }
-            else
-            {
-                rigidbody.constraints = RigidbodyConstraints.FreezeAll;
-                rigidbody.isKinematic = true;
-            }
+            rigidbody.constraints = locallyOwned 
+                ? RigidbodyConstraints.None 
+                : RigidbodyConstraints.FreezeAll;
         }
         catch (Exception ex)
         {
