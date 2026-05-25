@@ -315,13 +315,13 @@ internal sealed class NetworkActor : MonoBehaviour
     {
         if (CycleReleasing != cachedCycleReleasing)
         {
-            if (CycleReleasing != true)
-                return;
+            if (CycleReleasing == true)
+            {
+                var actorId = ActorId;
 
-            var actorId = ActorId;
-
-            if (actorId.Value != 0)
-                Main.SendToAllOrServer(new ActorTransferPacket { ActorId = actorId, OwnerId = LocalID });
+                if (actorId.Value != 0)
+                    Main.SendToAllOrServer(new ActorTransferPacket { ActorId = actorId, OwnerId = LocalID });
+            }
         }
         
         cachedCycleReleasing = CycleReleasing;
