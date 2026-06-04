@@ -7,29 +7,13 @@ namespace SR2MP;
 internal static class StartupCheck
 {
     private const string RequiredGameVersion = BuildInfo.ExactGameVersion;
-    private const string VersionUrl = "https://raw.githubusercontent.com/pyeight/SlimeRancher2Multiplayer/refs/heads/master/latestModVersion.txt";
-    private const string DiscordUrl = BuildInfo.Discord;
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern int MessageBoxW(IntPtr hWnd, string text, string caption, uint type);
 
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-    private static extern IntPtr ShellExecuteW(
-        IntPtr hwnd,
-        string lpOperation,
-        string lpFile,
-        string lpParameters,
-        string lpDirectory,
-        int nShowCmd
-    );
-
     private const uint MB_OK = 0x00000000;
     private const uint MB_ICON_ERROR = 0x00000010;
     private const uint MB_ICON_WARNING = 0x00000030;
-    private const int SW_SHOW_NORMAL = 1;
-    private const float TIMEOUT = 30f;
-
-    private static volatile bool shouldQuit;
 
     public static void Initialize()
     {
@@ -50,6 +34,8 @@ internal static class StartupCheck
             installedGameVersion = versionParts[0];
         }
 
+        // ExactGameVersion is optional (may be null); CompareVersions treats a missing
+        // version as "equal", so the strict exact-version gate below is simply skipped.
         switch (CompareVersions(installedGameVersion, RequiredGameVersion))
         {
             case < 0:
@@ -74,78 +60,9 @@ internal static class StartupCheck
                 break;
         }
 
-        Task.Run(async () => await CheckModVersionAsync());
-        StartCoroutine(QuitCoroutine());
-    }
-
-    private static System.Collections.IEnumerator QuitCoroutine()
-    {
-        var elapsed = 0f;
-
-        while (!shouldQuit && elapsed < TIMEOUT)
-        {
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        if (shouldQuit)
-        {
-            Application.Quit();
-        }
-    }
-
-    private static async Task CheckModVersionAsync()
-    {
-        try
-        {
-            // ReSharper disable once ShortLivedHttpClient
-            using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(5);
-
-            const string currentModVersion = BuildInfo.Version;
-            var latestVersion = (await client.GetStringAsync(VersionUrl)).Trim();
-
-            switch (CompareVersions(currentModVersion, latestVersion))
-            {
-                case < 0:
-                    ShowMessageBox(
-                        "Your SR2MP mod is outdated!\n\n" +
-                        $"Your version: {currentModVersion}\n" +
-                        $"Latest version: {latestVersion}\n\n" +
-                        "Click OK to join our Discord or get a new version from NexusMods.\n" +
-                        "The game will close after clicking OK.",
-                        "SR2MP – Update Available",
-                        MB_OK | MB_ICON_WARNING, true
-                    );
-
-                    OpenUrl(DiscordUrl);
-                    shouldQuit = true;
-                    break;
-
-                case > 0:
-                    ShowMessageBox(
-                        "Your SR2MP mod version is newer than the latest release.\n\n" +
-                        $"Your version: {currentModVersion}\n" +
-                        $"Latest version: {latestVersion}\n\n" +
-                        "This version is not officially supported and may not work correctly.",
-                        "SR2MP – Unsupported Version",
-                        MB_OK | MB_ICON_WARNING, false
-                    );
-                    break;
-            }
-        }
-        catch (TaskCanceledException)
-        {
-            SrLogger.LogWarning("SR2MP version check timed out");
-        }
-        catch (HttpRequestException ex)
-        {
-            SrLogger.LogWarning($"SR2MP version check failed: Network error\n{ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            SrLogger.LogWarning($"Failed to check SR2MP version\n{ex}");
-        }
+        // Mod-version check is intentionally omitted in this fork: we never fetch
+        // latestModVersion.txt from GitHub, so the game won't auto-quit on a version
+        // mismatch. The exact-game-version gate above still runs.
     }
 
     private static void ShowMessageBox(string text, string caption, uint type, bool error)
@@ -165,20 +82,13 @@ internal static class StartupCheck
         }
     }
 
-    private static void OpenUrl(string url)
-    {
-        try
-        {
-            ShellExecuteW(IntPtr.Zero, "open", url, null!, null!, SW_SHOW_NORMAL);
-        }
-        catch (Exception ex)
-        {
-            SrLogger.LogWarning($"Could not open URL: {url}\n{ex.Message}");
-        }
-    }
-
     private static int CompareVersions(string version1, string version2)
     {
+        // Treat a missing version as "equal" so callers don't have to null-check;
+        // an absent constraint should never be the reason startup throws.
+        if (string.IsNullOrEmpty(version1) || string.IsNullOrEmpty(version2))
+            return 0;
+
         var v1Parts = version1.Split('.');
         var v2Parts = version2.Split('.');
         var maxLength = Math.Max(v1Parts.Length, v2Parts.Length);
