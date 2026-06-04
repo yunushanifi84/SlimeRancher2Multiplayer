@@ -11,16 +11,49 @@ internal sealed class GordoSlimeFeedHandler : BasePacketHandler<GordoSlimeFeedPa
 {
     protected override bool Handle(GordoSlimeFeedPacket packet, IPEndPoint? _)
     {
+        if (packet.Authoritative)
+        {
+            // Host -> client: adopt the host's absolute eaten count verbatim.
+            SetEatenCount(packet, packet.Count);
+            return false;
+        }
+
+        // Host applying a client's delta request: add it to the authoritative count, then
+        // broadcast the resulting absolute total to everyone (sender included).
+        if (!Main.Server.IsRunning)
+            return false;
+
+        var current = GameState.gordos.TryGetValue(packet.ID, out var gordo)
+            ? gordo.GordoEatenCount
+            : 0;
+        var newCount = current + packet.Count;
+
+        SetEatenCount(packet, newCount);
+
+        Main.Server.SendToAll(new GordoSlimeFeedPacket
+        {
+            ID = packet.ID,
+            Count = newCount,
+            Authoritative = true,
+            RequiredFoodCount = packet.RequiredFoodCount,
+            GordoType = packet.GordoType
+        });
+
+        return false;
+    }
+
+    private static void SetEatenCount(GordoSlimeFeedPacket packet, int eatenCount)
+    {
         if (GameState.gordos.TryGetValue(packet.ID, out var gordo))
         {
-            gordo.GordoEatenCount = packet.NewFoodCount;
+            gordo.GordoEatenCount = eatenCount;
         }
         else
         {
             gordo = new GordoModel
             {
                 fashions = new CppCollections.List<IdentifiableType>(0),
-                gordoEatCount = packet.NewFoodCount,
+                gordoEatCount = eatenCount,
                 gordoSeen = false,
                 gameObj = null,
                 targetCount = packet.RequiredFoodCount,
@@ -29,7 +62,5 @@ internal sealed class GordoSlimeFeedHandler : BasePacketHandler<GordoSlimeFeedPa
 
             GameState.gordos.Add(packet.ID, gordo);
         }
-
-        return true;
     }
 }
