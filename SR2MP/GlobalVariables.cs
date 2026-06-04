@@ -54,10 +54,25 @@ public static class GlobalVariables
     internal static readonly NetworkActorManager ActorManager = new();
 
     // To prevent stuff from being stuck in an infinite sending loop
+    private static int handlingPacketDepth;
+
     /// <summary>
     /// Gets or sets a value indicating whether a network packet is currently being processed.
+    /// Backed by a re-entrancy counter: setting <c>true</c> enters a handling scope and
+    /// <c>false</c> leaves it, so nested handlers (a handler applying a change that triggers
+    /// another patched call) keep the guard active until the outermost scope exits.
     /// </summary>
-    public static bool HandlingPacket { get; internal set; }
+    public static bool HandlingPacket
+    {
+        get => handlingPacketDepth > 0;
+        internal set
+        {
+            if (value)
+                handlingPacketDepth++;
+            else if (handlingPacketDepth > 0)
+                handlingPacketDepth--;
+        }
+    }
 
     /// <summary>
     /// Gets the local identifier for the current instance, dynamically checking whether it is acting as the server or a client.
