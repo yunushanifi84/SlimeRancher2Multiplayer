@@ -1,4 +1,3 @@
-using System.Net;
 using SR2MP.Handlers.Internal;
 using SR2MP.Packets.Upgrade;
 using SR2MP.Packets.Utils;
@@ -6,19 +5,21 @@ using SR2MP.Packets.Utils;
 namespace SR2MP.Handlers.Player;
 
 [PacketHandler((byte)PacketType.PlayerUpgrade)]
-internal sealed class PlayerUpgradeHandler : BasePacketHandler<PlayerUpgradePacket>
+internal sealed class PlayerUpgradeHandler : AuthoritativePacketHandler<PlayerUpgradePacket>
 {
-    protected override bool Handle(PlayerUpgradePacket packet, IPEndPoint? _)
+    // The packet carries the absolute upgrade level, so applying it is idempotent and the
+    // host can echo the request verbatim (no BuildAuthoritative override needed): every peer
+    // ends up at the same level regardless of how many times the packet is applied.
+    protected override void ApplyLocally(PlayerUpgradePacket packet)
     {
         var model = SceneContext.Instance.PlayerState._model.upgradeModel;
 
         var upgrade = model.upgradeDefinitions.items._items.FirstOrDefault(
             x => x._uniqueId == packet.UpgradeID);
 
-        HandlingPacket = true;
-        model.IncrementUpgradeLevel(upgrade);
-        HandlingPacket = false;
+        if (upgrade == null)
+            return;
 
-        return true;
+        model.SetUpgradeLevel(upgrade, packet.Level);
     }
 }
